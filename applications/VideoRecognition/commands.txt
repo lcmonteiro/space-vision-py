@@ -1,0 +1,12 @@
+session_001
+0 image ImageTest_22.png 50 500000 Light1 found_once visual_persistent 0 0,0,0,0
+1 image ImageTest_23.png 50 500000 Road found_once visual_persistent 0 0,0,0,0
+2 number 200 50 5000000 Speed found_once visual_persistent 0 336,334,99,58
+3 image ImageTest_24.png 50 500000 Left found_once visual_persistent 0 0,0,0,0
+4 number 2 0 5000000 Gear found_once visual_persistent 0 866,344,59,60
+5 number 27 0 5000000 Odo found_once visual_persistent 0 632,532,58,23
+End 001
+
+session_002
+0 image ImageTest_17.png 50 500000 Light1 found_once visual_persistent 0 0,0,0,0
+End 001
