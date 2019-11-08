@@ -5,21 +5,39 @@
 #
 # Created on oct 8, 2019, 22:00 PM
 # ------------------------------------------------------------------------------------------------
-#
+# external
+from cv2                  import VideoCapture                 
+# internal
+from library.vision_input import VisionInput
 # -----------------------------------------------------------------------------
 # VisionOutput 
 # -----------------------------------------------------------------------------
 #
-class VisionInput:
+class VisionInputCamera(VisionInput):
+	#
+	# -----------------------------------------------------
+	# initialization
+	# -----------------------------------------------------
+	#
+	def __init__(self, source=0):
+		self.__resource = VideoCapture(source)
 	# 
 	# -----------------------------------------------------
-	# api
+	# check status
 	# -----------------------------------------------------
 	#
 	def good(self):
-		raise RuntimeError("good was not overrided")
+		return self.__resource.isOpened()
+	# 
+	# -----------------------------------------------------
+	# read frame
+	# -----------------------------------------------------
+	#
 	def read(self):
-		raise RuntimeError("read was not overrided")
+		good, frame = self.__resource.read()
+		if not good:
+			raise RuntimeError("camera::read frame failed")
+		return frame
 #
 # ------------------------------------------------------------------------------------------------
 # End

@@ -5,19 +5,39 @@
 #
 # Created on oct 8, 2019, 22:00 PM
 # ------------------------------------------------------------------------------------------------
-#
+# external
+from cv2                   import imshow                  
+from cv2                   import destroyWindow                  
+from cv2                   import namedWindow, WINDOW_NORMAL                   
+# internal
+from library.vision_output import VisionOutput
 # -----------------------------------------------------------------------------
 # VisionOutput 
 # -----------------------------------------------------------------------------
 #
-class VisionOutput:
+class VisionOutputWindow(VisionOutput):
+	#
+	# -----------------------------------------------------
+	# initialization
+	# -----------------------------------------------------
+	#
+	def __init__(self, id):
+		self.__id = id
+		namedWindow(id, WINDOW_NORMAL)
+	#
+	# -----------------------------------------------------
+	# destroy
+	# -----------------------------------------------------
+	#
+	def __del__(self):
+		destroyWindow(self.__id)
 	# 
 	# -----------------------------------------------------
 	# api
 	# -----------------------------------------------------
 	#
 	def write(self, frame):
-		raise RuntimeError("write was not overrided")
+		imshow(self.__id, frame)
 #
 # ------------------------------------------------------------------------------------------------
 # End

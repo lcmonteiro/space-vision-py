@@ -8,13 +8,13 @@
 #
 # filters
 #
-from filters import VisionFilterNumber
+from library.filters.vision_filter_number import VisionFilterNumber
 #
 # ------------------------------------------------------------------------------------------------
 # Filter - Builder
 # ------------------------------------------------------------------------------------------------
 #
-class FilterBuilder:
+class VisionFilterBuilder:
     @staticmethod
     def Build(id, config):
         #
