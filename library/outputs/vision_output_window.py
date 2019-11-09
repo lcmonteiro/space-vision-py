@@ -3,7 +3,7 @@
 # File:   vision_output.py
 # Author: Luis Monteiro
 #
-# Created on oct 8, 2019, 22:00 PM
+# Created on nov 8, 2019, 22:00 PM
 # ------------------------------------------------------------------------------------------------
 # external
 from cv2                   import imshow                  

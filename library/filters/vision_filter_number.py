@@ -3,7 +3,7 @@
 # File:   vision_filter_numbers.py
 # Author: Luis Monteiro
 #
-# Created on oct 8, 2019, 22:00 PM
+# Created on nov 8, 2019, 22:00 PM
 # ------------------------------------------------------------------------------------------------
 # internal
 from library.vision_filter import VisionFilter

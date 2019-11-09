@@ -3,7 +3,7 @@
  * File:   vision_video_display.h
  * Author: Luis Monteiro
  *
- * Created on oct 8, 2019, 22:00 PM
+ * Created on nov 8, 2019, 22:00 PM
  * ------------------------------------------------------------------------------------------------
  */
 #ifndef VIDEO_DISPLAY_H
