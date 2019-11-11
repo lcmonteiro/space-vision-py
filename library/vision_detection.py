@@ -115,9 +115,9 @@ class VisionDetection:
         filters = {}
         for filter_key, filter_conf in conf['filters'].items():
             try:
-                filters[filter_key] = VisionFilterBuilder(
+                filters[filter_key] = VisionFilterBuilder.Build(
                     filter_conf['type'],
-                    filter_conf['conf']) 
+                    filter_conf.get('conf'))
             except Exception as ex:
                 self.__log.exception(ex)
         return filters

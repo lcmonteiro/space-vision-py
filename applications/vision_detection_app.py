@@ -50,6 +50,7 @@ if __name__ == '__main__':
     from logging  import getLogger       as logger
     from logging  import DEBUG           as LEVEL
     from sys      import stdout
+    from os.path  import abspath, dirname
     #
     # ---------------------------------------------------------------
     # parse parameters
@@ -59,7 +60,7 @@ if __name__ == '__main__':
     # configuration path
     parser.add_argument('--config', '-c', 
         type    = str, 
-        default = 'vision_detection_app.yaml',
+        default = '%s/vision_detection_app.yaml'%(dirname(abspath(__file__))),
         help    = 'configuration file path')
     args = parser.parse_args()
     # 
@@ -83,6 +84,8 @@ if __name__ == '__main__':
     except Exception as e:
         logger().exception(e)
         exit(-1)
+    except KeyboardInterrupt:
+        exit(0)
 #
 # ------------------------------------------------------------------------------------------------
 # End
