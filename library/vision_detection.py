@@ -51,13 +51,11 @@ class VisionDetection:
         #
         selected = {}
         while wait(1) < 0:
-            #
             # read frame
-            #
             frame = self.__input.read()
-            #        
+            # set output frame
+            self.__output.set_frame(frame)
             # update selected filters
-            # 
             for id, params in self._read_commands():
                 if params['level'] > 0 :
                     filter = self.__filters[id]
@@ -65,19 +63,15 @@ class VisionDetection:
                     selected[id] = filter
                 else:
                     selected.pop(id, None) 
-            #
             # process filters
-            #
             for id, filter in selected:
                 try:
                     for result in filter.process(frame):
                         callback(id, result)
                 except:
                     self.__log.warning("process filter {} failed".format(id))
-            #
-            # output
-            #
-            self.__output.write(frame)
+            # output write
+            self.__output.write()
     # ------------------------------------------------------------------------
     # write commands
     # ------------------------------------------------------------------------

@@ -26,7 +26,8 @@ setup(
     install_requires=[
         'opencv-python',
         'argparse',
-        'logging'
+        'logging',
+        'seaborn'
     ],
 	entry_points={
 	  'console_scripts': [

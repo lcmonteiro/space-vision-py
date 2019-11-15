@@ -16,7 +16,11 @@ class VisionOutput:
 	# api
 	# -----------------------------------------------------
 	#
-	def write(self, frame):
+	def set_frame(self, frame):
+		raise RuntimeError("set_frame was not overrided")
+	def add_filter(self, region, results):
+		raise RuntimeError("add_filter was not overrided")
+	def write(self):
 		raise RuntimeError("write was not overrided")
 #
 # ------------------------------------------------------------------------------------------------

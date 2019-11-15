@@ -51,6 +51,8 @@ if __name__ == '__main__':
     from logging  import DEBUG           as LEVEL
     from sys      import stdout
     from os.path  import abspath, dirname
+    import seaborn as sns
+    sns.set_palette("hls")
     #
     # ---------------------------------------------------------------
     # parse parameters

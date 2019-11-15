@@ -6,11 +6,43 @@
 # Created on nov 8, 2019, 22:00 PM
 # ------------------------------------------------------------------------------------------------
 #
+from numpy import array
 # -----------------------------------------------------------------------------
 # VisionFilter 
 # -----------------------------------------------------------------------------
 #
 class VisionFilter:
+	#
+	# -----------------------------------------------------
+	# region
+	# -----------------------------------------------------
+	#
+	class Region:
+		#
+		# initialization
+		#
+		def __init__(self, position, dimension):
+			self.__position  = array(position)
+			self.__dimension = array(dimension)
+		#
+		# begin region
+		#
+		def begin(self, scale=array([1.0, 1.0])):
+			return (
+				self.__position * scale
+			).astype(int)
+		#
+		# end region
+		#
+		def end(self, scale=array([1.0, 1.0])):
+			return ((
+				self.__position + self.__dimension
+			) * scale).astype(int)
+		#
+		# size 
+		#
+		def size(self, scale=array([1.0, 1.0])):
+			return self.__dimension * scale
 	#
 	# ----------------------------------------------------
 	# result
@@ -31,6 +63,8 @@ class VisionFilter:
 			return self.__level
 		def label(self):
 			return self.__label
+		def region(self):
+			return self.__region
 	#
 	# ----------------------------------------------------
 	# process
