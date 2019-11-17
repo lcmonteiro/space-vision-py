@@ -27,71 +27,54 @@ class VisionOutputWindow(VisionOutput):
 	# -------------------------------------------------------------------------
 	#
 	def __init__(self, id):
-		self.__id = id
-		namedWindow(id, WINDOW_NORMAL)
+		super().__init__(id)
+		# create output window
+		namedWindow(self._id, WINDOW_NORMAL)
 	#
 	# -------------------------------------------------------------------------
 	# destroy
 	# -------------------------------------------------------------------------
 	#
 	def __del__(self):
-		destroyWindow(self.__id)
-	# 
+		destroyWindow(self._id)
+	#
 	# -------------------------------------------------------------------------
-	# set frame
+	# override flush
 	# -------------------------------------------------------------------------
 	#
-	def set_frame(self, frame):
-		from library.vision_filter import VisionFilter
-		self.__frame  = frame
-		self.__filter = {
-			'test': (
-				VisionFilter.Region((0.25,0.25), (0.25, 0.25)),[
-					VisionFilter.Result(
-						'123', 0.9, VisionFilter.Region((0.5,0.5), (0.5, 0.5)))
-				]
-			)
-		}
-	# 
-	# -------------------------------------------------------------------------
-	# add filter frame
-	# -------------------------------------------------------------------------
-	#
-	def add_filter(self, name, region, results:list):
-		self.__filter[name] = (region, results)
-	# 
-	# -------------------------------------------------------------------------
-	# write
-	# -------------------------------------------------------------------------
-	#
-	def write(self):
+	def flush(self, observer):
 		# colors generation
-		colors = array(color_palette(None, len(self.__filter))) * 255
+		colors = array(color_palette(None, len(self._filter))) * 255
 		# print regions
-		for (name, (region, results)), color in zip(self.__filter.items(), colors):
-			self._write_region(name, region, flip(color))
+		for (id, (region, results)), color in zip(self._filter.items(), colors):
+			self.__print_region(id, region, flip(color))		
+			# print detections	
 			for result in results:
-				self._write_detection(region, result, flip(color))
-		imshow(self.__id, self.__frame)
+				self.__print_detection(region, result, flip(color))
+		imshow(self._id, self._frame)
+	 	# process base flush
+		return super().flush(observer)
 	# 
 	# -------------------------------------------------------------------------
-	# write tools
+	# print tools
 	# -------------------------------------------------------------------------
 	#
-	def _write_region(self, name, region, color):
-		f_size = array(self.__frame.shape[:2])
+	def __print_region(self, name, region, color):
+		f_size = flip(array(self._frame.shape[:2]))
 		begin  = tuple(region.begin(f_size))
 		end    = tuple(region.end  (f_size))
-		putText(self.__frame, name, begin, FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
-		rectangle(self.__frame, begin, end, color, 1)
+		rectangle(self._frame, begin, end, color, 2)
+		putText(self._frame, name, begin, FONT_HERSHEY_SIMPLEX, 1, color, 8)
+		putText(self._frame, name, begin, FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2)
 
-	def _write_detection(self, region, result, color):
-		f_size = array(self.__frame.shape[:2])
+	def __print_detection(self, region, result, color):
+		f_size = flip(array(self._frame.shape[:2]))
 		r_size = region.size(f_size)
 		begin  = tuple(result.region().begin(r_size) + region.begin(f_size))
 		end    = tuple(result.region().end  (r_size) + region.begin(f_size))
-		putText(self.__frame, result.label(), begin, FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-		rectangle(self.__frame, begin, end, color, 2)
+		rectangle(self._frame, begin, end, color, 1)
+		putText(self._frame, result.label(), begin, FONT_HERSHEY_SIMPLEX, 0.5, color, 5)
+		putText(self._frame, result.label(), begin, FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1)
 
 # #################################################################################################
 # -------------------------------------------------------------------------------------------------

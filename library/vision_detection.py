@@ -1,10 +1,11 @@
-#
+# ################################################################################################
 # ------------------------------------------------------------------------------------------------
 # File:   vision_detection.py
 # Author: Luis Monteiro
 #
 # Created on nov 8, 2019, 22:00 PM
 # ------------------------------------------------------------------------------------------------
+# ################################################################################################
 #
 # external imports
 from cv2      import waitKey    as wait
@@ -14,15 +15,17 @@ from logging  import getLogger  as logger
 from library.inputs.vision_input_camera   import VisionInputCamera
 from library.outputs.vision_output_window import VisionOutputWindow
 from library.vision_config                import VisionFilterBuilder
-#
+# ################################################################################################
 # ------------------------------------------------------------------------------------------------
 # VisionDetection 
 # ------------------------------------------------------------------------------------------------
-#
+# ################################################################################################
 class VisionDetection:
+    #
     # ------------------------------------------------------------------------
     # initialization
     # ------------------------------------------------------------------------
+    #
     def __init__(self, config):
         # -------------------------------------------------
         # variables
@@ -36,11 +39,13 @@ class VisionDetection:
         # load input 
         self.__input  = VisionInputCamera()
         # load output
-        self.__output = VisionOutputWindow("")
+        self.__output = VisionOutputWindow('vision detection')
+    #
     # ------------------------------------------------------------------------
     # serve
     # ------------------------------------------------------------------------
-    def serve(self, callback):
+    #
+    def serve(self, observer):
         #
         # check vision input
         #
@@ -51,47 +56,45 @@ class VisionDetection:
         #
         selected = {}
         while wait(1) < 0:
-            # read frame
+            # read input frame
             frame = self.__input.read()
-            # set output frame
-            self.__output.set_frame(frame)
+            # write output frame
+            self.__output.write_frame(frame)
             # update selected filters
             for id, params in self._read_commands():
-                if params['level'] > 0 :
+                if params is not None:
                     filter = self.__filters[id]
-                    filter.update(params)
+                    filter.update(**params)
                     selected[id] = filter
                 else:
                     selected.pop(id, None) 
             # process filters
-            for id, filter in selected:
+            for id, filter in selected.items():
                 try:
-                    for result in filter.process(frame):
-                        callback(id, result)
+                    self.__output.write_filter(
+                        id, filter.region(), filter.process(frame))
                 except:
                     self.__log.warning("process filter {} failed".format(id))
-            # output write
-            self.__output.write()
+            # output flush
+            self.__output.flush(observer)
+    #
     # ------------------------------------------------------------------------
     # write commands
     # ------------------------------------------------------------------------
-    def set_filter(self, id, level=1.0, delta=0):
-        #std::lock_guard<std::mutex> lock(__locker);
-        #__select.emplace_back(id, level);
+    #
+    def set_filter(self, id, **kargs):
+        self.__select.append((id, kargs))
         return self
     def clr_filter(self, id):
-        #std::lock_guard<std::mutex> lock(__locker);
-        #__select.emplace_back(id, -1);
+        self.__select.append((id, None))
         return self
-    def set_filters(self, level=1.0, delta=0):
-        #std::lock_guard<std::mutex> lock(__locker);
-        #for(auto& f : __filters)
-        #    __select.emplace_back(std::get<0>(f), level);
+    def set_filters(self, **kargs):
+        for id in self.__filters:
+            self.__select.append((id, kargs))
         return self
     def clr_filters(self):
-        #std::lock_guard<std::mutex> lock(__locker);
-        #for(auto& f : __filters)
-        #    __select.emplace_back(std::get<0>(f), -1);
+        for id in self.__filters:
+            self.__select.append((id, None))
         return self
     #
     # ------------------------------------------------------------------------
@@ -115,8 +118,8 @@ class VisionDetection:
             except Exception as ex:
                 self.__log.exception(ex)
         return filters
-#
+# ################################################################################################
 # ------------------------------------------------------------------------------------------------
 # End
 # ------------------------------------------------------------------------------------------------
-#
+# ################################################################################################
