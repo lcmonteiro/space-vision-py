@@ -64,8 +64,8 @@ class VisionOutputWindow(VisionOutput):
 		begin  = tuple(region.begin(f_size))
 		end    = tuple(region.end  (f_size))
 		rectangle(self._frame, begin, end, color, 2)
-		putText(self._frame, name, begin, FONT_HERSHEY_SIMPLEX, 1, color, 8)
-		putText(self._frame, name, begin, FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2)
+		putText(self._frame, name, begin, FONT_HERSHEY_SIMPLEX, 0.8, color, 10)
+		putText(self._frame, name, begin, FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2)
 
 	def __print_detection(self, region, result, color):
 		f_size = flip(array(self._frame.shape[:2]))

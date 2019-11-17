@@ -1,3 +1,8 @@
 filters:
   speed:
     type: number
+    conf:
+      roi: 
+        pos: [0.1, 0.2] 
+        dim: [0.3, 0.4]
+

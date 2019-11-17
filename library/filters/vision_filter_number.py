@@ -23,19 +23,24 @@ class VisionFilterNumber(VisionFilter):
 	#
 	def __init__(self, config):
 		super().__init__(config)
+		print(config)
     #
 	# -------------------------------------------------------------------------
 	# process
 	# -------------------------------------------------------------------------
 	#
 	def process(self, frame):
-		return [
-			VisionFilter.Result(
-				'123', 0.9, VisionFilter.Region((0.0,0.0), (0.5, 0.5))
-			)
-		]
 		# run process steps
 		data = self.crop (frame)
+		
+		from cv2 import imshow
+		imshow('crop', data)
+
+		return [
+			VisionFilter.Result(
+				'123', 0.9, VisionFilter.Region((0.2,0.3), (0.5, 0.5))
+			)
+		]
 		data = self.detect(data)
 		return self.select(data)
 	#
