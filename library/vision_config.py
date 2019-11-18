@@ -21,7 +21,7 @@ class VisionFilterBuilder:
         # Register
         # ---------------------------------------------------------------------
         FILTERS = {
-        	"number": lambda conf : VisionFilterNumber(conf)
+            "number": lambda conf : VisionFilterNumber(conf)
         }
         # ---------------------------------------------------------------------
         # Process

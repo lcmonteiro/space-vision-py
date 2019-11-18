@@ -11,15 +11,15 @@
 # -----------------------------------------------------------------------------
 #
 class VisionInput:
-	# 
-	# -----------------------------------------------------
-	# api
-	# -----------------------------------------------------
-	#
-	def good(self):
-		raise RuntimeError("good was not overrided")
-	def read(self):
-		raise RuntimeError("read was not overrided")
+    # 
+    # -----------------------------------------------------
+    # api
+    # -----------------------------------------------------
+    #
+    def good(self):
+        raise RuntimeError("good was not overrided")
+    def read(self):
+        raise RuntimeError("read was not overrided")
 #
 # ------------------------------------------------------------------------------------------------
 # End

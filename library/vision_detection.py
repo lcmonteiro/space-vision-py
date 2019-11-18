@@ -74,7 +74,7 @@ class VisionDetection:
                     self.__output.write_filter(
                         id, filter.region(), filter.process(frame))
                 except:
-                    self.__log.warning("process filter {} failed".format(id))
+                    self.__log.exception("process filter {} failed".format(id))
             # output flush
             self.__output.flush(observer)
     #

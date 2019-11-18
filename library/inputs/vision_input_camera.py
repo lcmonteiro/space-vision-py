@@ -14,30 +14,30 @@ from library.vision_input import VisionInput
 # -----------------------------------------------------------------------------
 #
 class VisionInputCamera(VisionInput):
-	#
-	# -----------------------------------------------------
-	# initialization
-	# -----------------------------------------------------
-	#
-	def __init__(self, source=0):
-		self.__resource = VideoCapture(source)
-	# 
-	# -----------------------------------------------------
-	# check status
-	# -----------------------------------------------------
-	#
-	def good(self):
-		return self.__resource.isOpened()
-	# 
-	# -----------------------------------------------------
-	# read frame
-	# -----------------------------------------------------
-	#
-	def read(self):
-		good, frame = self.__resource.read()
-		if not good:
-			raise RuntimeError("camera::read frame failed")
-		return frame
+    #
+    # -----------------------------------------------------
+    # initialization
+    # -----------------------------------------------------
+    #
+    def __init__(self, source=0):
+        self.__resource = VideoCapture(source)
+    # 
+    # -----------------------------------------------------
+    # check status
+    # -----------------------------------------------------
+    #
+    def good(self):
+        return self.__resource.isOpened()
+    # 
+    # -----------------------------------------------------
+    # read frame
+    # -----------------------------------------------------
+    #
+    def read(self):
+        good, frame = self.__resource.read()
+        if not good:
+            raise RuntimeError("camera::read frame failed")
+        return frame
 #
 # ------------------------------------------------------------------------------------------------
 # End

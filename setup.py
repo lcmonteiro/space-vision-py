@@ -29,11 +29,11 @@ setup(
         'logging',
         'seaborn'
     ],
-	entry_points={
-	  'console_scripts': [
-		  'vision-app= applications:main'
-	  ]
-	},
+    entry_points={
+      'console_scripts': [
+          'vision-app= applications:main'
+      ]
+    },
  )
  # ----------------------------------------------------------------------------
  # end

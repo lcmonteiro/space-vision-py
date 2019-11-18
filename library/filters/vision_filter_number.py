@@ -9,6 +9,9 @@
 #
 # internal
 from library.vision_filter import VisionFilter
+from library.models        import VisionModelTextEAST
+# external
+import cv2 as cv
 #
 # ################################################################################################
 # ------------------------------------------------------------------------------------------------
@@ -17,39 +20,42 @@ from library.vision_filter import VisionFilter
 # ################################################################################################
 class VisionFilterNumber(VisionFilter):
     #
-	# -------------------------------------------------------------------------
-	# initialization
-	# -------------------------------------------------------------------------
-	#
-	def __init__(self, config):
-		super().__init__(config)
-		print(config)
+    # -------------------------------------------------------------------------
+    # initialization
+    # -------------------------------------------------------------------------
     #
-	# -------------------------------------------------------------------------
-	# process
-	# -------------------------------------------------------------------------
-	#
-	def process(self, frame):
-		# run process steps
-		data = self.crop (frame)
-		
-		from cv2 import imshow
-		imshow('crop', data)
+    def __init__(self, config):
+        super().__init__(config)
+        # load model for text detection
+        self.__model = VisionModelTextEAST()
+    #
+    # -------------------------------------------------------------------------
+    # process
+    # -------------------------------------------------------------------------
+    #
+    def process(self, frame):
+        # run process steps
+        data = self.crop (frame)
+        
+        from cv2 import imshow
+        imshow('crop', data)
 
-		return [
-			VisionFilter.Result(
-				'123', 0.9, VisionFilter.Region((0.2,0.3), (0.5, 0.5))
-			)
-		]
-		data = self.detect(data)
-		return self.select(data)
-	#
-	# -------------------------------------------------------------------------
-	# steps
-	# -------------------------------------------------------------------------
-	# 		
-	def detect(self, data):
-		pass
+        
+        data = self.detect(data)
+        return [
+            VisionFilter.Result(
+                '123', 0.9, VisionFilter.Region((0.2,0.3), (0.5, 0.5))
+            )
+        ]
+        return self.select(data)
+    #
+    # -------------------------------------------------------------------------
+    # steps
+    # -------------------------------------------------------------------------
+    #         
+    def detect(self, data):
+        print("model result::", self.__model.process(data))
+        return data
 # ################################################################################################
 # ------------------------------------------------------------------------------------------------
 # End
