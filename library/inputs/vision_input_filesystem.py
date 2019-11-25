@@ -1,43 +1,50 @@
 #
 # ------------------------------------------------------------------------------------------------
-# File:   vision_input_camera.py
+# File:   vision_input_filesystem.py
 # Author: Luis Monteiro
 #
 # Created on nov 8, 2019, 22:00 PM
 # ------------------------------------------------------------------------------------------------
 # external
-from cv2     import VideoCapture                 
+from cv2     import imread         
+from glob    import glob        
 # internal
 from library import VisionInput
 # -----------------------------------------------------------------------------
 # VisionOutput 
 # -----------------------------------------------------------------------------
 #
-class VisionInputCamera(VisionInput):
+class VisionInputFilesystem(VisionInput):
     #
     # -----------------------------------------------------
     # initialization
     # -----------------------------------------------------
     #
     def __init__(self, source=0):
-        self.__resource = VideoCapture(int(source))
+        print(glob(source))
+        def gen():
+            paths = glob(source)
+            if len(paths):
+                for path in paths:
+                    yield path
+                yield from gen()
+        # create generator
+        self.__gen = gen()
     # 
     # -----------------------------------------------------
     # check status
     # -----------------------------------------------------
     #
     def good(self):
-        return self.__resource.isOpened()
+        return True
     # 
     # -----------------------------------------------------
     # read frame
     # -----------------------------------------------------
     #
     def read(self):
-        good, frame = self.__resource.read()
-        if not good:
-            raise RuntimeError("camera::read frame failed")
-        return frame
+        frame = imread(next(self.__gen))
+        return frame    
 #
 # ------------------------------------------------------------------------------------------------
 # End

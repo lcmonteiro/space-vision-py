@@ -14,31 +14,47 @@ from logging import getLogger as logger
 #
 # intern
 #
-from library.vision_detection import VisionDetection
+from library         import VisionDetection
+from library.inputs  import VisionInputCamera
+from library.inputs  import VisionInputFilesystem
+from library.outputs import VisionOutputWindow
 # #############################################################################
 # -----------------------------------------------------------------------------
 # main
 # -----------------------------------------------------------------------------
 # #############################################################################
 def main(args):
+    print(args)
     #
     # ----------------------------------------------------
     # init and load filters 
     # ----------------------------------------------------
     #                
-    vd = VisionDetection(loader(open(args['config'])))
+    vision_detection = VisionDetection(
+        # configuration
+        loader(open(args['config'])), 
+        # input options
+        {
+            'camera'     : VisionInputCamera,
+            'filesystem' : VisionInputFilesystem
+        }[args['input']](args['src']),
+        # output options
+        {
+            'window'    : VisionOutputWindow
+        }[args['output']](args['dst'])
+    )
     #
     # ----------------------------------------------------
     # configure filter
     # ----------------------------------------------------
     #
-    vd.set_filters()
+    vision_detection.set_filters()
     #
     # ----------------------------------------------------
     # run detection
     # ----------------------------------------------------
     #
-    @vd.serve
+    @vision_detection.serve
     def process(id, result):
         logger().info('filter={} label={}]'.format(
             id, result.label()
@@ -67,6 +83,26 @@ if __name__ == '__main__':
         type    = str, 
         default = '%s/vision_detection_app.yaml'%(dirname(abspath(__file__))),
         help    = 'configuration file path')
+    # input options
+    parser.add_argument('--input', '-i', 
+        type    = str, 
+        default = 'camera',
+        choices =['camera', 'filesystem'],
+        help    = 'input option')
+    # output options
+    parser.add_argument('--output', '-o', 
+        type    = str, 
+        default = 'window',
+        choices =['window'],
+        help    = 'output option')
+    parser.add_argument('src', 
+        default = '0',
+        nargs   = '?',
+        help    ='source id')
+    parser.add_argument('dst', 
+        default = 'vision detection',
+        nargs   = '?',
+        help    ='destination id')
     args = parser.parse_args()
     # 
     # ---------------------------------------------------------------
@@ -78,7 +114,10 @@ if __name__ == '__main__':
         filemode = 'w',
         level    = LEVEL, 
         #filename= 'vision_detection_app.log', 
-        format   = '[%(asctime)s] [%(levelname)-10s] [%(funcName)s] %(message)s')
+        format   = 
+            '[%(asctime)s] '
+            '[%(levelname)-10s] '
+            '[%(funcName)s] %(message)s')
     #
     # ---------------------------------------------------------------
     # main 

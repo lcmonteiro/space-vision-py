@@ -7,14 +7,14 @@
 # ------------------------------------------------------------------------------------------------
 # ################################################################################################
 # external
-from cv2                   import imshow                  
-from cv2                   import destroyWindow                  
-from cv2                   import namedWindow, WINDOW_NORMAL                   
-from cv2                   import rectangle, putText, FONT_HERSHEY_SIMPLEX
-from numpy                 import array, flip
-from seaborn               import color_palette
+from cv2      import imshow                  
+from cv2      import destroyWindow                  
+from cv2      import namedWindow, WINDOW_NORMAL                   
+from cv2      import rectangle, putText, FONT_HERSHEY_SIMPLEX
+from numpy    import array, flip
+from seaborn  import color_palette
 # internal
-from library.vision_output import VisionOutput
+from library  import VisionOutput
 # #############################################################################
 # -----------------------------------------------------------------------------
 # VisionOutput 
@@ -26,7 +26,7 @@ class VisionOutputWindow(VisionOutput):
     # initialization
     # -------------------------------------------------------------------------
     #
-    def __init__(self, id):
+    def __init__(self, id='vision output'):
         super().__init__(id)
         # create output window
         namedWindow(self._id, WINDOW_NORMAL)

@@ -9,8 +9,11 @@
 # -----------------------------------------------------------------------------
 # publish base class
 # -----------------------------------------------------------------------------
-from .vision_filter import VisionFilter
-from .vision_model  import VisionModel
+from .vision_filter    import VisionFilter
+from .vision_model     import VisionModel
+from .vision_input     import VisionInput
+from .vision_output    import VisionOutput
+from .vision_detection import VisionDetection
 # ################################################################################################
 # ------------------------------------------------------------------------------------------------
 # End

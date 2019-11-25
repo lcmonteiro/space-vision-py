@@ -54,7 +54,8 @@ class VisionFilterNumber(VisionFilter):
     # -------------------------------------------------------------------------
     #         
     def detect(self, data):
-        print("model result::", self.__model.process(data))
+        from pprint import pprint
+        pprint(self.__model.process(data))
         return data
 # ################################################################################################
 # ------------------------------------------------------------------------------------------------

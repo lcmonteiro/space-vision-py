@@ -12,8 +12,8 @@ from cv2      import waitKey    as wait
 from logging  import getLogger  as logger
 #
 # internal imports
-from library.inputs.vision_input_camera   import VisionInputCamera
-from library.outputs.vision_output_window import VisionOutputWindow
+from library.inputs.vision_input_camera   import VisionInputCamera   as DefaultInput
+from library.outputs.vision_output_window import VisionOutputWindow  as DefaultOutput
 from library.vision_config                import VisionFilterBuilder
 # ################################################################################################
 # ------------------------------------------------------------------------------------------------
@@ -22,28 +22,28 @@ from library.vision_config                import VisionFilterBuilder
 # ################################################################################################
 class VisionDetection:
     #
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------
     # initialization
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------
     #
-    def __init__(self, config):
+    def __init__(self, config, input=DefaultInput(), output=DefaultOutput()):
         # -------------------------------------------------
         # variables
         # -------------------------------------------------
         # command containers  
         self.__select = []
+        # load input 
+        self.__input  = input
+        # load output
+        self.__output = output
         # load logger
-        self.__log = logger()
+        self.__logger = logger()
         # filter data base 
         self.__filters = self._load_filters(config)
-        # load input 
-        self.__input  = VisionInputCamera()
-        # load output
-        self.__output = VisionOutputWindow('vision detection')
     #
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------
     # serve
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------
     #
     def serve(self, observer):
         #
@@ -55,7 +55,7 @@ class VisionDetection:
         # image processing
         #
         selected = {}
-        while wait(1) < 0:
+        while wait(1000) < 0:
             # read input frame
             frame = self.__input.read()
             # write output frame
@@ -74,13 +74,13 @@ class VisionDetection:
                     self.__output.write_filter(
                         id, filter.region(), filter.process(frame))
                 except:
-                    self.__log.exception("process filter {} failed".format(id))
+                    self.__logger.exception("process filter {} failed".format(id))
             # output flush
             self.__output.flush(observer)
     #
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------
     # write commands
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------
     #
     def set_filter(self, id, **kargs):
         self.__select.append((id, kargs))
@@ -97,16 +97,16 @@ class VisionDetection:
             self.__select.append((id, None))
         return self
     #
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------
     # read commands
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------
     #
     def _read_commands(self):
         return self.__select
     #
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------
     # load filters
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------
     #
     def _load_filters(self, conf):
         filters = {}
@@ -118,8 +118,8 @@ class VisionDetection:
             except Exception as ex:
                 self.__log.exception(ex)
         return filters
-# ################################################################################################
-# ------------------------------------------------------------------------------------------------
+# #################################################################################################
+# -------------------------------------------------------------------------------------------------
 # End
-# ------------------------------------------------------------------------------------------------
-# ################################################################################################
+# -------------------------------------------------------------------------------------------------
+# #################################################################################################
