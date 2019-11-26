@@ -1,6 +1,6 @@
 # ################################################################################################
 # ------------------------------------------------------------------------------------------------
-# File:   vision_filter_numbers.py
+# File:   vision_filter_text.py
 # Author: Luis Monteiro
 #
 # Created on nov 8, 2019, 22:00 PM
@@ -8,17 +8,18 @@
 # ################################################################################################
 #
 # internal
-from library.vision_filter import VisionFilter
-from library.models        import VisionModelTextEAST
+from library             import VisionFilter
+from library.models      import VisionModelTextEAST
 # external
-import cv2 as cv
+from imutils.perspective import four_point_transform
+from numpy               import array, flip
 #
 # ################################################################################################
 # ------------------------------------------------------------------------------------------------
-# VisionFilterNumbers 
+# VisionFilterText
 # ------------------------------------------------------------------------------------------------
 # ################################################################################################
-class VisionFilterNumber(VisionFilter):
+class VisionFilterText(VisionFilter):
     #
     # -------------------------------------------------------------------------
     # initialization
@@ -34,29 +35,38 @@ class VisionFilterNumber(VisionFilter):
     # -------------------------------------------------------------------------
     #
     def process(self, frame):
-        # run process steps
-        data = self.crop (frame)
-        
-        from cv2 import imshow
-        imshow('crop', data)
-
-        
-        data = self.detect(data)
-        return [
-            VisionFilter.Result(
-                '123', 0.9, VisionFilter.Region((0.2,0.3), (0.5, 0.5))
-            )
-        ]
-        return self.select(data)
+        # crop by filter roi
+        data = self.crop(frame)
+        # localize texts 
+        results = []
+        for contour, roi in self.__localization(data):
+            # recognition roi
+            label, level = self.__recognition(roi)
+            # save result
+            results.append(VisionFilter.Result(
+                label, level, VisionFilter.Region(contour[0], contour[1])))
+        # select results
+        return self.select(results)
     #
     # -------------------------------------------------------------------------
-    # steps
+    # step 1 - text localization
     # -------------------------------------------------------------------------
     #         
-    def detect(self, data):
-        from pprint import pprint
-        pprint(self.__model.process(data))
-        return data
+    def __localization(self, data):
+        output = []
+        size = flip(array(data.shape[:2]))
+        for roi in self.__model.process(data):
+            contour = array((roi.min(0), roi.max(0)-roi.min(0))) / size
+            output.append((contour, four_point_transform(data, roi)))
+        return output
+    #
+    # -------------------------------------------------------------------------
+    # step 2 - text recognition
+    # -------------------------------------------------------------------------
+    #         
+    def __recognition(self, data):
+        return '%d'%(data[0][0][0]), '%d'%(data[0][0][1]) 
+        
 # ################################################################################################
 # ------------------------------------------------------------------------------------------------
 # End

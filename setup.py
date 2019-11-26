@@ -27,7 +27,8 @@ setup(
         'opencv-python',
         'argparse',
         'logging',
-        'seaborn'
+        'seaborn',
+        'imutils'
     ],
     entry_points={
       'console_scripts': [

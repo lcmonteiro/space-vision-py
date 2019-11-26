@@ -1,6 +1,6 @@
 filters:
   speed:
-    type: number
+    type: text
     conf:
       roi: 
         pos: [0.1, 0.2] 

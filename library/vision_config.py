@@ -8,7 +8,7 @@
 # ################################################################################################
 #
 # filters
-from library.filters.vision_filter_number import VisionFilterNumber
+from library.filters import VisionFilterText
 #
 # ------------------------------------------------------------------------------------------------
 # Filter - Builder
@@ -21,7 +21,7 @@ class VisionFilterBuilder:
         # Register
         # ---------------------------------------------------------------------
         FILTERS = {
-            "number": lambda conf : VisionFilterNumber(conf)
+            "text": lambda conf : VisionFilterText(conf)
         }
         # ---------------------------------------------------------------------
         # Process

@@ -7,11 +7,12 @@
 # ------------------------------------------------------------------------------------------------
 # ################################################################################################
 #
+# local
+from .resources import vision_model_resource
 # internal
-from library           import VisionModel
-from library.resources import vision_resource
+from library    import VisionModel
 # external
-import cv2 as cv
+import cv2      as cv
 #
 # ################################################################################################
 # ------------------------------------------------------------------------------------------------
@@ -27,7 +28,7 @@ class VisionModelTextEAST(VisionModel):
     def __init__(self):
         super().__init__()
         # load network
-        self.__net = cv.dnn.readNet(vision_resource('east-test'))
+        self.__net = cv.dnn.readNet(vision_model_resource('text-detection-east'))
         # select output layers
         self.__output_layers = [
             'feature_fusion/Conv_7/Sigmoid',
@@ -45,21 +46,8 @@ class VisionModelTextEAST(VisionModel):
         data = self.__run(data)
         # decode results
         data = self.__decode(data)
-        # Apply NMS
-        boxes       = data[0]
-        confidences = data[1]
-        indices = cv.dnn.NMSBoxesRotated(boxes, confidences, 0.5, 0.5)
-        for i in indices:
-            # get 4 corners of the rotated rect
-            vertices = cv.boxPoints(boxes[i[0]])
-            # scale the bounding box coordinates based on the respective ratios
-            print(vertices)
-            for j in range(4):
-                cv.line(frame, tuple(vertices[j-1]), tuple(vertices[j]), (0, 255, 0), 1)
-        # Display the frame
-        cv.imshow('detect', frame)
-        return []
-        return data
+        # format results
+        return self.__format(data)
     #
     # -------------------------------------------------------------------------
     # steps 1 - input preparation
@@ -117,21 +105,33 @@ class VisionModelTextEAST(VisionModel):
                 # Calculate offset
                 offset = ([
                     x_offset + a_cos * x1_data[x] + a_sin * x2_data[x], 
-                    y_offset - a_sin * x1_data[x] + a_cos * x2_data[x]
-                ])
+                    y_offset - a_sin * x1_data[x] + a_cos * x2_data[x]])
                 # Find points for rectangle
                 p1 = (-a_sin * h + offset[0], -a_cos * h + offset[1])
                 p3 = (-a_cos * w + offset[0],  a_sin * w + offset[1])
                 # calculate center
                 center = (
                     0.5 * (p1[0] + p3[0]), 
-                    0.5 * (p1[1] + p3[1])
-                )
+                    0.5 * (p1[1] + p3[1]))
+                # update
                 detections.append((center, (w, h), -angle * 180.0 / pi))
                 confidences.append(float(score))
         # Return detections and confidences
         return [detections, confidences]
-
+    #
+    # -------------------------------------------------------------------------
+    # step 4 - format result
+    # -------------------------------------------------------------------------
+    #
+    def __format(self, data):
+        output      = []
+        boxes       = data[0]
+        confidences = data[1]
+        indices     = cv.dnn.NMSBoxesRotated(boxes, confidences, 0.5, 0.5)
+        for i in indices:    
+            # get 4 corners of the rotated rect
+            output.append(cv.boxPoints(boxes[i[0]]))
+        return output
 # ################################################################################################
 # ------------------------------------------------------------------------------------------------
 # End
