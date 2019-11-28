@@ -1,47 +1,44 @@
 # ################################################################################################
 # ------------------------------------------------------------------------------------------------
-# File:   vision_output.py
+# File:   window_output.py
 # Author: Luis Monteiro
 #
 # Created on nov 8, 2019, 22:00 PM
 # ------------------------------------------------------------------------------------------------
 # ################################################################################################
 # external
-from cv2      import imshow                  
-from cv2      import destroyWindow                  
-from cv2      import namedWindow, WINDOW_NORMAL                   
-from cv2      import rectangle, putText, FONT_HERSHEY_SIMPLEX
-from numpy    import array, flip
-from seaborn  import color_palette
+from cv2            import imshow                  
+from cv2            import destroyWindow                  
+from cv2            import namedWindow, WINDOW_NORMAL                   
+from cv2            import rectangle, putText, FONT_HERSHEY_SIMPLEX
+from numpy          import array, flip
+from seaborn        import color_palette
 # internal
-from library  import VisionOutput
+from vision.library import VisionOutput
 # #############################################################################
 # -----------------------------------------------------------------------------
 # VisionOutput 
 # -----------------------------------------------------------------------------
 # #############################################################################
-class VisionOutputWindow(VisionOutput):
-    #
+class WindowOutput(VisionOutput):
+
     # -------------------------------------------------------------------------
     # initialization
     # -------------------------------------------------------------------------
-    #
     def __init__(self, id='vision output'):
         super().__init__(id)
         # create output window
         namedWindow(self._id, WINDOW_NORMAL)
-    #
+
     # -------------------------------------------------------------------------
     # destroy
     # -------------------------------------------------------------------------
-    #
     def __del__(self):
         destroyWindow(self._id)
-    #
+    
     # -------------------------------------------------------------------------
     # override flush
     # -------------------------------------------------------------------------
-    #
     def flush(self, observer):
         # colors generation
         colors = array(color_palette(None, len(self._filter))) * 255
@@ -54,11 +51,10 @@ class VisionOutputWindow(VisionOutput):
         imshow(self._id, self._frame)
          # process base flush
         return super().flush(observer)
-    # 
+    
     # -------------------------------------------------------------------------
     # print tools
     # -------------------------------------------------------------------------
-    #
     def __print_region(self, name, region, color):
         f_size = flip(array(self._frame.shape[:2]))
         begin  = tuple(region.begin(f_size))

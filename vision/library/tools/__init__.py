@@ -6,15 +6,13 @@
 # Created on nov 17, 2019, 22:00 PM
 # ------------------------------------------------------------------------------------------------
 # ################################################################################################
-from os.path    import dirname
+
 # -----------------------------------------------------------------------------
-# get vision resource
+# publish models
 # -----------------------------------------------------------------------------
-def vision_model_resource(id):
-    return {
-        'text-detection-east'     : '{root}/frozen_east_text_detection.pb',
-        'test-recognition-resnet' : '{root}/resnet_text_recognition.pth'
-    }[id].format(root=dirname(__file__))
+from .text_detection_tool   import TextDetectionTool
+from .text_recognition_tool import TextRecognitionTool
+
 # ################################################################################################
 # ------------------------------------------------------------------------------------------------
 # End

@@ -11,7 +11,7 @@ with open('README.md', 'r') as fh:
 # setup
 # -----------------------------------------------------------------------------
 setup(
-    name='vision_detection',  
+    name='vision',  
     version='0.1',
     author='Luis Monteiro',
     author_email='monteiro.lcm@gmail.com',
@@ -19,9 +19,7 @@ setup(
     long_description=long_description,
     url='',
     packages=[
-        'library',
-        'bindings',
-        'applications',
+        'vision'
     ],
     install_requires=[
         'opencv-python',

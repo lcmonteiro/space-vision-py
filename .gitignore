@@ -1,1 +1,6 @@
-__pycache__
+# folders 
+vision.egg-info/*
+build/*
+# files
+*.egg
+*.pyc

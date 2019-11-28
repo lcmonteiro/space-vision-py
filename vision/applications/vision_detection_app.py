@@ -6,59 +6,55 @@
 # Created on nov 8, 2019, 22:00 PM
 # ------------------------------------------------------------------------------------------------
 # ################################################################################################ 
-#
+
 # extern
-#
 from yaml    import safe_load as loader
 from logging import getLogger as logger
-#
+
 # intern
-#
-from library         import VisionDetection
-from library.inputs  import VisionInputCamera
-from library.inputs  import VisionInputFilesystem
-from library.outputs import VisionOutputWindow
+from vision.library         import VisionDetector
+from vision.library.inputs  import CameraInput
+from vision.library.inputs  import FilesystemInput
+from vision.library.outputs import WindowOutput
+
 # #############################################################################
 # -----------------------------------------------------------------------------
 # main
 # -----------------------------------------------------------------------------
 # #############################################################################
 def main(args):
-    print(args)
-    #
+
     # ----------------------------------------------------
     # init and load filters 
-    # ----------------------------------------------------
-    #                
-    vision_detection = VisionDetection(
+    # ----------------------------------------------------      
+    vision_detector = VisionDetector(
         # configuration
         loader(open(args['config'])), 
         # input options
         {
-            'camera'     : VisionInputCamera,
-            'filesystem' : VisionInputFilesystem
+            'camera'     : CameraInput,
+            'filesystem' : FilesystemInput
         }[args['input']](args['src']),
         # output options
         {
-            'window'    : VisionOutputWindow
+            'window'    : WindowOutput
         }[args['output']](args['dst'])
     )
-    #
+    
     # ----------------------------------------------------
     # configure filter
     # ----------------------------------------------------
-    #
-    vision_detection.set_filters()
-    #
+    vision_detector.set_filters()
+    
     # ----------------------------------------------------
     # run detection
     # ----------------------------------------------------
-    #
-    @vision_detection.serve
+    @vision_detector.serve
     def process(id, result):
         logger().info('filter={} label={}]'.format(
             id, result.label()
         ))
+
 # ############################################################################
 # ----------------------------------------------------------------------------
 # entry point
@@ -72,11 +68,10 @@ if __name__ == '__main__':
     from os.path  import abspath, dirname
     import seaborn as sns
     sns.set_palette("hls")
-    #
+
     # ---------------------------------------------------------------
     # parse parameters
     # ---------------------------------------------------------------
-    #
     parser = ArgumentParser()
     # configuration path
     parser.add_argument('--config', '-c', 
@@ -104,11 +99,10 @@ if __name__ == '__main__':
         nargs   = '?',
         help    ='destination id')
     args = parser.parse_args()
-    # 
+    
     # ---------------------------------------------------------------
     # log configuration
     # ---------------------------------------------------------------
-    #
     config_logger(
         stream   = stdout,
         filemode = 'w',
@@ -118,11 +112,10 @@ if __name__ == '__main__':
             '[%(asctime)s] '
             '[%(levelname)-10s] '
             '[%(funcName)s] %(message)s')
-    #
+
     # ---------------------------------------------------------------
     # main 
     # ---------------------------------------------------------------
-    #
     try:
         exit(main(vars(args)))
     except Exception as e:

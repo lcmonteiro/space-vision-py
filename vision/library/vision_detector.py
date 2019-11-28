@@ -6,26 +6,26 @@
 # Created on nov 8, 2019, 22:00 PM
 # ------------------------------------------------------------------------------------------------
 # ################################################################################################
-#
+
 # external imports
 from cv2      import waitKey    as wait
 from logging  import getLogger  as logger
-#
+
 # internal imports
-from library.inputs.vision_input_camera   import VisionInputCamera   as DefaultInput
-from library.outputs.vision_output_window import VisionOutputWindow  as DefaultOutput
-from library.vision_config                import VisionFilterBuilder
+from .inputs        import CameraInput   as DefaultInput
+from .outputs       import WindowOutput  as DefaultOutput
+from .vision_config import VisionConfigFilter
+
 # ################################################################################################
 # ------------------------------------------------------------------------------------------------
 # VisionDetection 
 # ------------------------------------------------------------------------------------------------
 # ################################################################################################
-class VisionDetection:
-    #
+class VisionDetector:
+
     # -----------------------------------------------------------------------------------
     # initialization
     # -----------------------------------------------------------------------------------
-    #
     def __init__(self, config, input=DefaultInput(), output=DefaultOutput()):
         # -------------------------------------------------
         # variables
@@ -40,20 +40,17 @@ class VisionDetection:
         self.__logger = logger()
         # filter data base 
         self.__filters = self._load_filters(config)
-    #
+    
     # -----------------------------------------------------------------------------------
     # serve
     # -----------------------------------------------------------------------------------
-    #
     def serve(self, observer):
-        #
+
         # check vision input
-        #
         if not self.__input.good():
             raise RuntimeError("vision input open fail ...")
-        # 
+
         # image processing
-        #
         selected = {}
         while wait(1000) < 0:
             # read input frame
@@ -77,11 +74,10 @@ class VisionDetection:
                     self.__logger.exception("process filter {} failed".format(id))
             # output flush
             self.__output.flush(observer)
-    #
+    
     # -----------------------------------------------------------------------------------
     # write commands
     # -----------------------------------------------------------------------------------
-    #
     def set_filter(self, id, **kargs):
         self.__select.append((id, kargs))
         return self
@@ -96,28 +92,27 @@ class VisionDetection:
         for id in self.__filters:
             self.__select.append((id, None))
         return self
-    #
+    
     # -----------------------------------------------------------------------------------
     # read commands
     # -----------------------------------------------------------------------------------
-    #
     def _read_commands(self):
         return self.__select
-    #
+
     # -----------------------------------------------------------------------------------
     # load filters
     # -----------------------------------------------------------------------------------
-    #
     def _load_filters(self, conf):
         filters = {}
         for filter_key, filter_conf in conf['filters'].items():
             try:
-                filters[filter_key] = VisionFilterBuilder.Build(
+                filters[filter_key] = VisionConfigFilter.Build(
                     filter_conf['type'],
                     filter_conf.get('conf'))
             except Exception as ex:
-                self.__log.exception(ex)
+                self.__logger.exception(ex)
         return filters
+
 # #################################################################################################
 # -------------------------------------------------------------------------------------------------
 # End

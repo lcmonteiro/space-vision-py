@@ -8,9 +8,7 @@
 # ################################################################################################
 #
 # local
-from .resources import vision_model_resource
-# internal
-from library    import VisionModel
+from .resources import resource_path
 # external
 import cv2      as cv
 #
@@ -19,7 +17,7 @@ import cv2      as cv
 # VisionModelTextEAST 
 # ------------------------------------------------------------------------------------------------
 # ################################################################################################
-class VisionModelTextEAST(VisionModel):
+class TextDetectionEAST:
     #
     # -------------------------------------------------------------------------
     # initialization
@@ -28,7 +26,7 @@ class VisionModelTextEAST(VisionModel):
     def __init__(self):
         super().__init__()
         # load network
-        self.__net = cv.dnn.readNet(vision_model_resource('text-detection-east'))
+        self.__net = cv.dnn.readNet(resource_path('text-detection-east'))
         # select output layers
         self.__output_layers = [
             'feature_fusion/Conv_7/Sigmoid',
@@ -58,7 +56,7 @@ class VisionModelTextEAST(VisionModel):
         height = frame.shape[0]
         width  = frame.shape[1]
         return cv.dnn.blobFromImage(
-            frame, 1.0, (width, height), (123.68, 116.78, 103.94), True, False)
+            frame, 1.0, (width, height), (104, 117, 123), True, False)
     #
     # -------------------------------------------------------------------------
     # steps 2 - run model
