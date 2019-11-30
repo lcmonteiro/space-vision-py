@@ -26,7 +26,8 @@ setup(
         'argparse',
         'logging',
         'seaborn',
-        'imutils'
+        'imutils',
+        'robotremoteserver'
     ],
     entry_points={
       'console_scripts': [
