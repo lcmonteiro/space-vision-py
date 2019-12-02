@@ -9,6 +9,7 @@
 
 # external imports
 from logging  import getLogger  as logger
+from time     import time
 
 # ################################################################################################
 # ------------------------------------------------------------------------------------------------
@@ -20,15 +21,31 @@ class VisionDatabase:
     # -----------------------------------------------------------------------------------
     # initialization
     # -----------------------------------------------------------------------------------
-    def __init__(self, config, input=DefaultInput(), output=DefaultOutput()):
-        # -------------------------------------------------
-        # variables
-        # -------------------------------------------------
-        # load 
-        self.__contairer = output
+    def __init__(self):
         # load logger
         self.__logger    = logger()
+        # data container
+        self.__container = {}
+
+    # -----------------------------------------------------------------------------------
+    #  insert document
+    # -----------------------------------------------------------------------------------
+    def insert(self, key, data):
+        timestamp = time()
+        for key, data in doc.items():
+            # log information
+            self.__logger.info('container[{}]={}'.format(key, (data, timestamp)))
+            if key not in self.__container:
+                # save information
+                self.__container[key] =  [(data, timestamp)]
+            else:
+                self.__container[key] += [(data, timestamp)]
     
+    # -----------------------------------------------------------------------------------
+    #  find documents
+    # -----------------------------------------------------------------------------------
+    def find(self, key, time):
+        pass
 # #################################################################################################
 # -------------------------------------------------------------------------------------------------
 # End
