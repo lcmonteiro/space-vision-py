@@ -60,9 +60,12 @@ class VisionDetector:
             # update selected filters
             for id, params in self._read_commands():
                 if params is not None:
-                    filter = self.__filters[id]
-                    filter.update(**params)
-                    selected[id] = filter
+                    try:
+                        filter = self.__filters[id]
+                        filter.update(**params)
+                        selected[id] = filter
+                    except:
+                        self.__logger.exception("update filter {} failed".format(id))    
                 else:
                     selected.pop(id, None) 
             # process filters
@@ -97,7 +100,11 @@ class VisionDetector:
     # read commands
     # -----------------------------------------------------------------------------------
     def _read_commands(self):
-        return self.__select
+        # get actions
+        select = self.__select
+        # clear container 
+        self.__select = []
+        return select
 
     # -----------------------------------------------------------------------------------
     # load filters

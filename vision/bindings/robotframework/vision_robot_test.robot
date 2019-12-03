@@ -27,19 +27,30 @@ ${vision_server_ip}  127.0.0.1:20010
 *** Keywords ***
 # ---------------------------------------------------------------------------------------
 # #################################################################################################
+Enable Vision Filters
+  [Documentation]   Enable a Group of Filters
+  [Arguments]  @{names}
+  FOR  ${name}  IN  @{names}
+    vision.set_filter  ${name}
+  END
+
+Disable Vision Filters
+  [Documentation]   Clear All Filters
+  vision.clear_filters
+
 Wait Until Vision Number Variable 
-    [Documentation]   Read Vision Variable
-    [Arguments]  ${name}  ${timeout}  ${value}  ${tolerance}
-    [return]     ${result}
-    ${value_min}=  Evaluate   ${value} - ${tolerance}
-    ${value_max}=  Evaluate   ${value} + ${tolerance}
-    ${result}=  vision.get_number_variable  ${name}  ${None}  ${timeout}  ${value_min}  ${value_max}
+  [Documentation]   Read Vision Variable
+  [Arguments]  ${name}  ${timeout}  ${value}  ${tolerance}
+  [return]     ${result}
+  ${value_min}=  Evaluate   ${value} - ${tolerance}
+  ${value_max}=  Evaluate   ${value} + ${tolerance}
+  ${result}=  vision.get_number_variable  ${name}  ${None}  ${timeout}  ${value_min}  ${value_max}
 
 Wait Until Vision Text Variable 
-    [Documentation]   Read Vision Variable
-    [Arguments]  ${name}  ${timeout}  ${pattern}
-    [return]     ${result}
-    ${result}=  vision.get_text_variable  ${name}  ${None}  ${timeout}  ${pattern} 
+  [Documentation]   Read Vision Variable
+  [Arguments]  ${name}  ${timeout}  ${pattern}
+  [return]     ${result}
+  ${result}=  vision.get_text_variable  ${name}  ${None}  ${timeout}  ${pattern} 
 
 # #################################################################################################
 # ---------------------------------------------------------------------------------------
@@ -52,8 +63,9 @@ Wait Until Vision Text Variable
 Text Recognition
   [Documentation]  Text Recognition
   [Tags]  Test
-  [Setup]
-  Wait Until Vision Text Variable  speed  5  120 
+  [Setup]     Enable Vision Filters  speed
+  [Teardown]  Disable Vision Filters 
+  Wait Until Vision Text Variable  speed  5  .*
 
 ###################################################################################################
 # ---------------------------------------------------------------------------------------
