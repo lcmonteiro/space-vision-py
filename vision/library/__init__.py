@@ -15,7 +15,7 @@ from .vision_tool      import VisionTool
 from .vision_input     import VisionInput
 from .vision_output    import VisionOutput
 from .vision_detector  import VisionDetector
-from .vision_detector  import VisionDatabase
+from .vision_database  import VisionDatabase
 from .vision_config    import VisionConfigFilter
 
 # ################################################################################################

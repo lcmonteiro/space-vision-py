@@ -24,7 +24,7 @@ from vision.library import VisionDatabase
 ###################################################################################################
 class VisionApi(object):    
     # -----------------------------------------------------------------------------------
-    #   initialization
+    #  initialization
     # -----------------------------------------------------------------------------------
     def __init__(self, config):
         super().__init__()
@@ -32,13 +32,11 @@ class VisionApi(object):
         self.__logger   = logger()
         self.__detector = VisionDetector(config)
         self.__database = VisionDatabase()
-        # start detector
-        Thread(target=self.__demon_detector, name='detector', daemon=True)
 
     # -----------------------------------------------------------------------------------
-    # demon detector
+    #  serve
     # -----------------------------------------------------------------------------------
-    def __demon_detector(self):
+    def serve(self):
         @self.__detector.serve
         def process(id, result):
             self.__database.insert(id, result)
@@ -67,7 +65,7 @@ class VisionApi(object):
 # ---------------------------------------------------------------------------------------
 ###################################################################################################
 if __name__ == '__main__':
-    dlt= VisionApi()
+    api = VisionApi()
     
 
 ###################################################################################################

@@ -27,7 +27,8 @@ setup(
         'logging',
         'seaborn',
         'imutils',
-        'robotremoteserver'
+        'robotremoteserver',
+        'pytesseract'
     ],
     entry_points={
       'console_scripts': [

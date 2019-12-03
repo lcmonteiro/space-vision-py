@@ -4,3 +4,7 @@ build/*
 # files
 *.egg
 *.pyc
+# robo reports
+log.html
+output.xml
+report.html
