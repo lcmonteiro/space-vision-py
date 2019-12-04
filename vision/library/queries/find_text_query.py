@@ -29,12 +29,13 @@ class FindTextQuery(VisionQuery):
     # -------------------------------------------------------------------------
     # process
     # -------------------------------------------------------------------------
-    def __call__(self, colection, time_interval, label_pattern):
-        def process(result):
-            if match(label_pattern, result.label()):
-                return result.label()
+    def __call__(self, collection, time_interval, label_pattern):
+        def process(results):
+            for result in reversed(results):
+                if match(label_pattern, result.label()):
+                    return result.label()
             return None
-        return self.process(time_interval, process)
+        return self.process(collection, time_interval, process)
          
 # ################################################################################################
 # ------------------------------------------------------------------------------------------------

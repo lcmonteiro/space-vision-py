@@ -10,6 +10,7 @@
 # external imports
 from logging  import getLogger  as logger
 from time     import time
+from bisect   import bisect_left, bisect_right
 
 # ################################################################################################
 # ------------------------------------------------------------------------------------------------
@@ -32,20 +33,39 @@ class VisionDatabase:
     # -----------------------------------------------------------------------------------
     def insert(self, key, data):
         timestamp = time()
-        for key, data in doc.items():
-            # log information
-            self.__logger.info('container[{}]={}'.format(key, (data, timestamp)))
-            if key not in self.__container:
-                # save information
-                self.__container[key] =  [(data, timestamp)]
-            else:
-                self.__container[key] += [(data, timestamp)]
+        # log information
+        self.__logger.info('insert[{}]={}'.format(key, (data, timestamp)))
+        if key not in self.__container:
+            # save information
+            self.__container[key] =  [(data, timestamp)]
+        else:
+            self.__container[key] += [(data, timestamp)]
     
     # -----------------------------------------------------------------------------------
     #  find documents
     # -----------------------------------------------------------------------------------
     def find(self, key, time):
-        pass
+        # --------------------------------------------------------------------- 
+        # define filter 
+        # ---------------------------------------------------------------------
+        class Filter:
+            def __init__(self, collection):
+                self.__collection = collection
+            
+            def __getitem__(self, key):
+                return self.__collection[key][1]
+
+            def __len__(self):
+                return len(self.__collection)
+
+            def __call__(self, time):
+                return map(lambda x :x[0], self.__collection[
+                    bisect_left(self, time[0]): bisect_right(self, time[1])])
+
+        # --------------------------------------------------------------------- 
+        # execute filter 
+        # ---------------------------------------------------------------------
+        return Filter(self.__container.get(key,[]))(time)
 # #################################################################################################
 # -------------------------------------------------------------------------------------------------
 # End

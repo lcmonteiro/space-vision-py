@@ -8,7 +8,7 @@
 # ################################################################################################
 #
 # imports
-from numpy import array, flip
+from time  import time, sleep
 #
 # ---------------------------------------------------------------------------------------
 # VisionQuery 
@@ -24,12 +24,19 @@ class VisionQuery:
     # -------------------------------------------------------------------------
     # process
     # -------------------------------------------------------------------------
-    def process(self, time_interval, find):
-        print(time_interval)
-        class test:
-            def label(self):
-                return 'test1'
-        return find(test())
+    def process(self, collection, interval, find):
+        beg = float(time()) + int(interval[0]) if interval[0] else 0.0
+        end = float(time()) + int(interval[1]) if interval[1] else 0.0
+        # wait and validation 
+        while  time() < end:
+            for result in self.__database.find(collection, (beg, end)):
+                found = find(result)
+                if found:
+                    return found
+            sleep(1)
+        # raise an exception  
+        raise ValueError('results not found (%s)'%(collection))
+
 # #################################################################################################
 # ---------------------------------------------------------------------------------------
 # End
