@@ -65,7 +65,8 @@ Text Recognition
   [Tags]  Test
   [Setup]     Enable Vision Filters  speed
   [Teardown]  Disable Vision Filters 
-  Wait Until Vision Text Variable  speed  5  .*
+  ${result}=  Wait Until Vision Text Variable  speed  5  .*
+  Log To Console  ${result}
 
 ###################################################################################################
 # ---------------------------------------------------------------------------------------

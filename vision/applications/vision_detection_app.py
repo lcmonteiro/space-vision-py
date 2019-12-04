@@ -50,10 +50,13 @@ def main(args):
     # run detection
     # ----------------------------------------------------
     @vision_detector.serve
-    def process(id, result):
-        logger().info('filter={} label={}]'.format(
-            id, result.label()
-        ))
+    def process(id, results):
+        for result in results:
+            logger().info(
+                'filter={} label={}]'.format(
+                    id, result.label()
+                )
+            )
 
 # ############################################################################
 # ----------------------------------------------------------------------------

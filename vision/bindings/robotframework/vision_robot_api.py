@@ -14,8 +14,11 @@ from logging   import getLogger  as logger
 from threading import Thread
 
 # internal
-from vision.library import VisionDetector
-from vision.library import VisionDatabase
+from vision.library         import VisionDetector
+from vision.library         import VisionDatabase
+
+# queries
+from vision.library.queries import FindTextQuery
 
 ###################################################################################################
 # ---------------------------------------------------------------------------------------
@@ -32,14 +35,16 @@ class VisionApi(object):
         self.__logger   = logger()
         self.__detector = VisionDetector(config)
         self.__database = VisionDatabase()
+        # queries
+        self.__find_text = FindTextQuery(self.__database)
 
     # -----------------------------------------------------------------------------------
     #  serve
     # -----------------------------------------------------------------------------------
     def serve(self):
         @self.__detector.serve
-        def process(id, result):
-            self.__database.insert(id, result)
+        def process(id, results):
+            self.__database.insert(id, results)
 
 
     # -----------------------------------------------------------------------------------
@@ -70,8 +75,7 @@ class VisionApi(object):
     #  get text variable
     # -----------------------------------------------------------------------------------
     def get_text_variable(self, varname, time_beg, time_end, pattern):
-        from time import sleep
-        sleep(1)
+        return self.__find_text(varname, (time_beg, time_end), pattern)
 
 ###################################################################################################
 # ---------------------------------------------------------------------------------------
@@ -79,7 +83,7 @@ class VisionApi(object):
 # ---------------------------------------------------------------------------------------
 ###################################################################################################
 if __name__ == '__main__':
-    #api = VisionApi()
+    api = VisionApi()
     
 
 ###################################################################################################

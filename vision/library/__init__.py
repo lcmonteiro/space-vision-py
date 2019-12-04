@@ -16,6 +16,7 @@ from .vision_input     import VisionInput
 from .vision_output    import VisionOutput
 from .vision_detector  import VisionDetector
 from .vision_database  import VisionDatabase
+from .vision_query     import VisionQuery
 from .vision_config    import VisionConfigFilter
 
 # ################################################################################################
