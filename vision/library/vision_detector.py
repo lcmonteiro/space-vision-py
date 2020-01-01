@@ -12,8 +12,6 @@ from cv2      import waitKey    as wait
 from logging  import getLogger  as logger
 
 # internal imports
-from .inputs        import CameraInput   as DefaultInput
-from .outputs       import WindowOutput  as DefaultOutput
 from .vision_config import VisionConfigFilter
 
 # ################################################################################################
@@ -26,7 +24,7 @@ class VisionDetector:
     # -----------------------------------------------------------------------------------
     # initialization
     # -----------------------------------------------------------------------------------
-    def __init__(self, config, input=DefaultInput(), output=DefaultOutput()):
+    def __init__(self, config, input, output):
         # -------------------------------------------------
         # variables
         # -------------------------------------------------

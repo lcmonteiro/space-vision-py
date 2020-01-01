@@ -34,7 +34,10 @@ class WindowOutput(VisionOutput):
     # destroy
     # -------------------------------------------------------------------------
     def __del__(self):
-        destroyWindow(self._id)
+        try:
+            destroyWindow(self._id)
+        except:
+            pass
     
     # -------------------------------------------------------------------------
     # override flush
