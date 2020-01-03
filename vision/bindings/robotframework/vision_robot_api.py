@@ -16,6 +16,8 @@ from threading import Thread
 # internal
 from vision.library         import VisionDetector
 from vision.library         import VisionDatabase
+from vision.library.inputs  import CameraInput
+from vision.library.outputs import WindowOutput
 
 # queries
 from vision.library.queries import FindTextQuery
@@ -33,7 +35,7 @@ class VisionApi(object):
         super().__init__()
         # init variables
         self.__logger   = logger()
-        self.__detector = VisionDetector(config)
+        self.__detector = VisionDetector(config, CameraInput(), WindowOutput())
         self.__database = VisionDatabase()
         # queries
         self.__find_text = FindTextQuery(self.__database)
