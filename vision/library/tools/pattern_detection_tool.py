@@ -8,8 +8,9 @@
 # ################################################################################################
 
 # external
-import numba as nb
-import numpy as np
+import numba   as nb
+import numpy   as np
+import imutils as iu
 
 # internal
 from vision.library                import VisionTool
@@ -26,7 +27,8 @@ class PatternDetectionTool(VisionTool):
     def __init__(self, pattern):
         super().__init__()
         # engines
-        self.__pattern = pattern 
+        self.__pattern = pattern.astype(float)
+        self.__history = ((0,0,0), (0,0), (0,0)) 
 
     # -------------------------------------------------------------------------
     # process
@@ -41,16 +43,16 @@ class PatternDetectionTool(VisionTool):
     # steps 1 - input preparation
     # -------------------------------------------------------------------------        
     def __prepare(self, data):
-        return data
+        return data.astype(float)
     
     # -------------------------------------------------------------------------
     # steps 2 - search
     # -------------------------------------------------------------------------        
     def __search(self, data):
-        print(self.__pattern)
-        PatternDetectionTool.__convolve(
-            data.astype(float), 
-            self.__pattern.astype(float))        
+        cv.imshow('test', data.astype(np.uint8))
+        cv.imshow('test', iu.rotate(data, 10).astype(np.uint8))
+        cv.imshow('test', iu.resize(data, 200, 100).astype(np.uint8))
+        self.__convolve(data, self.__pattern)        
         return data
 
     # -------------------------------------------------------------------------
@@ -97,6 +99,7 @@ if __name__ == '__main__':
     cv.namedWindow('image'  , cv.WINDOW_NORMAL)
     cv.namedWindow('pattern', cv.WINDOW_NORMAL)
     cv.namedWindow('match'  , cv.WINDOW_NORMAL)
+    cv.namedWindow('test'  , cv.WINDOW_NORMAL)
     # pattern
     pattern = cv.imread(args.template)
     # tool
@@ -106,6 +109,7 @@ if __name__ == '__main__':
     # process
     # -----------------------------------------------------------------------------------
     for img in glob(args.images):
+        print(img)
         # read image
         image = cv.imread(img)
         # find pattern in image

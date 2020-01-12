@@ -19,7 +19,9 @@ setup(
     long_description=long_description,
     url='',
     packages=[
-        'vision'
+        'vision',
+        'vision.bindings',
+        'vision.bindings.robotframework',
     ],
     install_requires=[
         'opencv-python',
@@ -32,7 +34,7 @@ setup(
     ],
     entry_points={
       'console_scripts': [
-          'vision-app= applications:main'
+          'vision-robot= vision.bindings.robotframework:main'
       ]
     }
  )

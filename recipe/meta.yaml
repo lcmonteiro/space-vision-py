@@ -23,8 +23,8 @@ source:
 # -----------------------------------------------------------------------------
 build:
   number: 0
-  noarch: python
-  script: python -m pip install --no-deps --ignore-installed .
+  #noarch: python
+  script: python -m pip install --no-deps .
   entry_points:
     - vision-robot= vision.bindings.robotframework:main
 
@@ -37,7 +37,7 @@ requirements:
     - pip
   run:
     - python >=3.6
-    - pytesseract
+    - pytesseract [conda-forge]
 
 # -----------------------------------------------------------------------------
 # test
@@ -50,10 +50,9 @@ test:
 # about
 # -----------------------------------------------------------------------------
 about:
-  home: ''
-  license: ''
+  home: https://github.com/lcmonteiro/space-vision-py
+  license: MIT
   license_file: LICENSE
-  summary: ''
 # #############################################################################
 # -----------------------------------------------------------------------------
 # end
