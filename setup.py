@@ -26,9 +26,9 @@ setup(
     install_requires=[
         'opencv-python',
         'argparse',
-        'logging',
         'seaborn',
         'imutils',
+        'numba',
         'robotremoteserver',
         'pytesseract'
     ],

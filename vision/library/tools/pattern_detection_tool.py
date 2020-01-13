@@ -26,8 +26,9 @@ class PatternDetectionTool(VisionTool):
     # -------------------------------------------------------------------------
     def __init__(self, pattern):
         super().__init__()
-        # engines
-        self.__pattern = pattern.astype(float)
+        # properties
+        self.__pattern = self.__prepare_pattern(pattern.astype(float))
+
         self.__history = ((0,0,0), (0,0), (0,0)) 
 
     # -------------------------------------------------------------------------
@@ -54,7 +55,17 @@ class PatternDetectionTool(VisionTool):
         cv.imshow('test', iu.resize(data, 200, 100).astype(np.uint8))
         self.__convolve(data, self.__pattern)        
         return data
-
+    # -------------------------------------------------------------------------
+    # tool - prepere pattern
+    # -------------------------------------------------------------------------
+    @staticmethod
+    def __prepare_pattern(data, area=30000):
+        # current shape
+        shape   = np.array(ref.shape[:2])
+        # updated shape
+        reshape = shape * (area / np.product(shape))
+        # return a resheped pattern
+        return iu.resize(data, reshape[0], reshape[1])
     # -------------------------------------------------------------------------
     # tool - convolution
     # -------------------------------------------------------------------------
