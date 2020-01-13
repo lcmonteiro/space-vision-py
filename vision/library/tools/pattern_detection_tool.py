@@ -27,9 +27,14 @@ class PatternDetectionTool(VisionTool):
     def __init__(self, pattern):
         super().__init__()
         # properties
-        self.__pattern = self.__prepare_pattern(pattern.astype(float))
+        self.__pattern = self.__prepare_pattern(pattern)
 
         self.__history = ((0,0,0), (0,0), (0,0)) 
+    # -------------------------------------------------------------------------
+    # property - pattern
+    # -------------------------------------------------------------------------
+    def pattern(self):
+        return self.__pattern.astype(np.uint8)
 
     # -------------------------------------------------------------------------
     # process
@@ -61,11 +66,11 @@ class PatternDetectionTool(VisionTool):
     @staticmethod
     def __prepare_pattern(data, area=30000):
         # current shape
-        shape   = np.array(ref.shape[:2])
+        shape   = np.array(data.shape[:2])
         # updated shape
-        reshape = shape * (area / np.product(shape))
-        # return a resheped pattern
-        return iu.resize(data, reshape[0], reshape[1])
+        reshape = (shape * np.sqrt(area / np.product(shape))).astype(int)
+        # return a reshaped pattern
+        return iu.resize(data, reshape[0], reshape[1]).astype(float)
     # -------------------------------------------------------------------------
     # tool - convolution
     # -------------------------------------------------------------------------
@@ -126,7 +131,7 @@ if __name__ == '__main__':
         # find pattern in image
         match = tool.process(image)
         # print
-        cv.imshow('pattern', pattern)
+        cv.imshow('pattern', tool.pattern())
         cv.imshow('image'  , image  ) 
         cv.imshow('match'  , match  )
         # check
