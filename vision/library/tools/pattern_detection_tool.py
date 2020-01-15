@@ -28,8 +28,7 @@ class PatternDetectionTool(VisionTool):
         super().__init__()
         # properties
         self.__pattern = self.__prepare_pattern(pattern)
-
-        self.__history = ((0,0,0), (0,0), (0,0)) 
+        self.__history = []
     # -------------------------------------------------------------------------
     # property - pattern
     # -------------------------------------------------------------------------
@@ -58,7 +57,7 @@ class PatternDetectionTool(VisionTool):
         cv.imshow('test', data.astype(np.uint8))
         cv.imshow('test', iu.rotate(data, 10).astype(np.uint8))
         cv.imshow('test', iu.resize(data, 200, 100).astype(np.uint8))
-        self.__convolve(data, self.__pattern)        
+        print(self.__convolve_(data, self.__pattern, np.array([20, 20])))       
         return data
     # -------------------------------------------------------------------------
     # tool - prepere pattern
@@ -74,12 +73,31 @@ class PatternDetectionTool(VisionTool):
     # -------------------------------------------------------------------------
     # tool - convolution
     # -------------------------------------------------------------------------
+    # [correlation, y, x, d, r1, r2, r3]
     @staticmethod
     @nb.jit(nopython=True, nogil=True, parallel=True)
-    def __convolve(img, ref):
+    def __convolve_(img, ref, step):
         rsz = np.array(ref.shape[:2])
         isz = np.array(img.shape[:2])
+        dsz = np.append(isz / step - rsz + 1, 5).astype(np.uint32)
+        out = np.empty(dsz[0], dsz[1], dsz[2])
+        for i in nb.prange(dsz[0]):
+            y = i * step[0]
+            for j in nb.prange(dsz[1]):
+                x = j * step[1]
+                roi = img[y : y + rsz[0], x : x+ rsz[1]]
+                cnv = roi * ref
+                out[i, j] = np.array([cnv.sum() / roi.sum(), y, x], isz)
+        return out
+
+    @staticmethod
+    @nb.jit(nopython=True, nogil=True, parallel=True)
+    def __convolve(img, ref, step):
+        rsz = np.array(ref.shape[:2])
+        isz = np.array(img.shape[:2])
+        
         dsz = isz - rsz + 1 
+
         out = np.empty((dsz[0], dsz[1]))
         for y in nb.prange(dsz[0]):
             for x in nb.prange(dsz[1]):
@@ -104,7 +122,7 @@ if __name__ == '__main__':
     # template
     parser.add_argument('--template', '-t', type= str, default='./template.jpg')
     # images
-    parser.add_argument('--images'  , '-i', type= str, default = './*.jpg')
+    parser.add_argument('--images'  , '-i', type= str, default='./*.jpg')
     # parse
     args = parser.parse_args()
 
