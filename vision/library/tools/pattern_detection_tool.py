@@ -75,20 +75,29 @@ class PatternDetectionTool(VisionTool):
     # -------------------------------------------------------------------------
     # [correlation, y, x, d, r1, r2, r3]
     @staticmethod
-    @nb.jit(nopython=True, nogil=True, parallel=True)
-    def __convolve_(img, ref, step):
+    @nb.jit(nopython=True, parallel=True)
+    def __convolve_base(img, ref, step):
         rsz = np.array(ref.shape[:2])
         isz = np.array(img.shape[:2])
-        dsz = np.append(isz / step - rsz + 1, 5).astype(np.uint32)
-        out = np.empty(dsz[0], dsz[1], dsz[2])
+        dsz = np.append((isz - rsz) / step + 1, 5).astype(np.uint32)
+        out = np.empty((dsz[0], dsz[1], dsz[2]))
         for i in nb.prange(dsz[0]):
             y = i * step[0]
             for j in nb.prange(dsz[1]):
                 x = j * step[1]
                 roi = img[y : y + rsz[0], x : x+ rsz[1]]
                 cnv = roi * ref
-                out[i, j] = np.array([cnv.sum() / roi.sum(), y, x], isz)
-        return out
+                out[i, j] = np.append(np.array([cnv.sum() / roi.sum(), y, x]), isz)
+        return out.reshape((-1, 5))
+        
+    @staticmethod
+    @nb.jit(nopython=True, parallel=True)
+    def __convolve_scale(img, ref, ):
+        rsz = np.array(ref.shape[:2])
+        isz = np.array(img.shape[:2])
+
+
+        
 
     @staticmethod
     @nb.jit(nopython=True, nogil=True, parallel=True)
