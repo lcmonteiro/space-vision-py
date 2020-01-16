@@ -57,7 +57,7 @@ class PatternDetectionTool(VisionTool):
         cv.imshow('test', data.astype(np.uint8))
         cv.imshow('test', iu.rotate(data, 10).astype(np.uint8))
         cv.imshow('test', iu.resize(data, 200, 100).astype(np.uint8))
-        print(self.__convolve_(data, self.__pattern, np.array([20, 20])))       
+        print(self.__convolve_base(data, self.__pattern, np.array([20, 20])))       
         return data
     # -------------------------------------------------------------------------
     # tool - prepere pattern
@@ -76,15 +76,19 @@ class PatternDetectionTool(VisionTool):
     # [correlation, y, x, d, r1, r2, r3]
     @staticmethod
     @nb.jit(nopython=True, parallel=True)
-    def __convolve_base(img, ref, step):
+    def __convolve_base(img, ref, size):
+        # compute parameters
         rsz = np.array(ref.shape[:2])
         isz = np.array(img.shape[:2])
-        dsz = np.append((isz - rsz) / step + 1, 5).astype(np.uint32)
-        out = np.empty((dsz[0], dsz[1], dsz[2]))
+        dif = (isz - rsz)
+        stp = (dif / size + 1).astype(np.uint32)
+        dsz = (dif / stp  + 1).astype(np.uint32)
+        # output data
+        out = np.empty((dsz[0], dsz[1], 5))
         for i in nb.prange(dsz[0]):
-            y = i * step[0]
+            y = i * stp[0]
             for j in nb.prange(dsz[1]):
-                x = j * step[1]
+                x = j * stp[1]
                 roi = img[y : y + rsz[0], x : x+ rsz[1]]
                 cnv = roi * ref
                 out[i, j] = np.append(np.array([cnv.sum() / roi.sum(), y, x]), isz)
@@ -92,9 +96,15 @@ class PatternDetectionTool(VisionTool):
         
     @staticmethod
     @nb.jit(nopython=True, parallel=True)
-    def __convolve_scale(img, ref, ):
+    def __convolve_scale(img, ref, size):
         rsz = np.array(ref.shape[:2])
         isz = np.array(img.shape[:2])
+        kkk = np.min(isz - rsz)
+        # generate 
+        for 
+            iu.resize(image, 200, 100)
+
+
 
 
         
