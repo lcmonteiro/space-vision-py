@@ -28,6 +28,7 @@ class PatternDetectionTool(VisionTool):
         super().__init__()
         # properties
         self.__pattern = self.__prepare_pattern(pattern)
+        self.__scale   = [1.0, 1.3, 0.05]
         self.__history = []
     # -------------------------------------------------------------------------
     # property - pattern
@@ -48,19 +49,28 @@ class PatternDetectionTool(VisionTool):
     # steps 1 - input preparation
     # -------------------------------------------------------------------------        
     def __prepare(self, data):
-        return data.astype(float)
+        return self.__prepare_input(data, self.__pattern, self.__scale)
     
     # -------------------------------------------------------------------------
     # steps 2 - search
     # -------------------------------------------------------------------------        
     def __search(self, data):
-        cv.imshow('test', data.astype(np.uint8))
-        cv.imshow('test', iu.rotate(data, 10).astype(np.uint8))
-        cv.imshow('test', iu.resize(data, 200, 100).astype(np.uint8))
-        print(self.__convolve_base(data, self.__pattern, np.array([20, 20])))       
-        return data
+        out = np.concatenate([
+            self.__convolve_base(each, self.__pattern, np.array([10, 10]))
+            for each in data
+        ])
+
+            
+
+        print(out[out[:,0].argsort()])
+
+        #cv.imshow('test', data.astype(np.uint8))
+        #cv.imshow('test', iu.rotate(data, 10).astype(np.uint8))
+        #cv.imshow('test', iu.resize(data, 200, 100).astype(np.uint8))
+
+        return data[0]
     # -------------------------------------------------------------------------
-    # tool - prepere pattern
+    # tool - prepare pattern
     # -------------------------------------------------------------------------
     @staticmethod
     def __prepare_pattern(data, area=30000):
@@ -70,6 +80,21 @@ class PatternDetectionTool(VisionTool):
         reshape = (shape * np.sqrt(area / np.product(shape))).astype(int)
         # return a reshaped pattern
         return iu.resize(data, reshape[0], reshape[1]).astype(float)
+
+    # -------------------------------------------------------------------------
+    # tool - prepare input
+    # -------------------------------------------------------------------------
+    @staticmethod
+    def __prepare_input(img, ref, scale):
+        rsz = np.array(ref.shape[:2])
+        isz = np.array(img.shape[:2])
+        # base shape
+        ref = np.flip(isz * np.max(rsz/isz))
+        # return a set of reshaped images
+        return [
+            iu.resize(image, *(ref * k).astype(int)).astype(float) 
+            for k in np.arange(*scale)
+        ]
     # -------------------------------------------------------------------------
     # tool - convolution
     # -------------------------------------------------------------------------
@@ -94,15 +119,8 @@ class PatternDetectionTool(VisionTool):
                 out[i, j] = np.append(np.array([cnv.sum() / roi.sum(), y, x]), isz)
         return out.reshape((-1, 5))
         
-    @staticmethod
-    @nb.jit(nopython=True, parallel=True)
-    def __convolve_scale(img, ref, size):
-        rsz = np.array(ref.shape[:2])
-        isz = np.array(img.shape[:2])
-        kkk = np.min(isz - rsz)
-        # generate 
-        for 
-            iu.resize(image, 200, 100)
+    
+
 
 
 
@@ -153,6 +171,7 @@ if __name__ == '__main__':
     cv.namedWindow('pattern', cv.WINDOW_NORMAL)
     cv.namedWindow('match'  , cv.WINDOW_NORMAL)
     cv.namedWindow('test'  , cv.WINDOW_NORMAL)
+    cv.namedWindow('test1'  , cv.WINDOW_NORMAL)
     # pattern
     pattern = cv.imread(args.template)
     # tool
@@ -172,7 +191,7 @@ if __name__ == '__main__':
         cv.imshow('image'  , image  ) 
         cv.imshow('match'  , match  )
         # check
-        cv.waitKey(0)
+        #cv.waitKey(0)
 cv.destroyAllWindows()
 # ################################################################################################
 # ------------------------------------------------------------------------------------------------
