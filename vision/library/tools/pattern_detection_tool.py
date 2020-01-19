@@ -40,11 +40,19 @@ class PatternDetectionTool(VisionTool):
     # process
     # -------------------------------------------------------------------------
     def process(self, frame):
+        def print_region(frame, region):
+            from cv2 import rectangle, putText, FONT_HERSHEY_SIMPLEX
+            sy, sx = frame.shape[:2]
+            begin  = (int(sy * region[0][0]), int(sy * region[0][1]))
+            end    = (int(sx * region[1][0]), int(sy * region[1][1]))
+            rectangle(frame, begin, end, (255,0, 0), 2)
         # prepare input
         data = self.__prepare(frame)
         # search pattern
-        return self.__search(data)
-    
+        for region in self.__search(data):
+            print(region)
+            print_region(frame, region)
+        return frame 
     # -------------------------------------------------------------------------
     # steps 1 - input preparation
     # -------------------------------------------------------------------------        
@@ -55,20 +63,33 @@ class PatternDetectionTool(VisionTool):
     # steps 2 - search
     # -------------------------------------------------------------------------        
     def __search(self, data):
+        def find_region(data):
+            print(data)
+            sy, sx, = self.__pattern.shape[0:2]
+            print(sy, sx)
+            return [
+                ((rx / fx, ry / fy), ((rx + sx) / fx, (ry + sy) / fy))
+                for _, ry, rx, fy, fx in data
+            ]
+        # process
         out = np.concatenate([
             self.__convolve_base(each, self.__pattern, np.array([10, 10]))
             for each in data
         ])
+        # sort and return
+        return find_region(out[out[:,0].argsort()][-3:])
+    # -------------------------------------------------------------------------
+    # steps 3 - search
+    # ------------------------------------------------------------------------- 
+    def __select(self, data):
+        pass
+    # -------------------------------------------------------------------------
+    # tool - prepare pattern
+    # -------------------------------------------------------------------------
+    @staticmethod
+    def __extract_features(img):
+        return cv.cvtColor(img, cv.COLOR_BGR2LAB)[:,:, 1:3].astype(np.float64)
 
-            
-
-        print(out[out[:,0].argsort()])
-
-        #cv.imshow('test', data.astype(np.uint8))
-        #cv.imshow('test', iu.rotate(data, 10).astype(np.uint8))
-        #cv.imshow('test', iu.resize(data, 200, 100).astype(np.uint8))
-
-        return data[0]
     # -------------------------------------------------------------------------
     # tool - prepare pattern
     # -------------------------------------------------------------------------
@@ -78,8 +99,12 @@ class PatternDetectionTool(VisionTool):
         shape   = np.array(data.shape[:2])
         # updated shape
         reshape = (shape * np.sqrt(area / np.product(shape))).astype(int)
-        # return a reshaped pattern
-        return iu.resize(data, reshape[0], reshape[1]).astype(float)
+        # reshaped pattern
+        data    = iu.resize(data, reshape[0], reshape[1])
+        # extract features
+        data    = PatternDetectionTool.__extract_features(data)
+        # normalize and return
+        return data
 
     # -------------------------------------------------------------------------
     # tool - prepare input
@@ -92,7 +117,8 @@ class PatternDetectionTool(VisionTool):
         ref = np.flip(isz * np.max(rsz/isz))
         # return a set of reshaped images
         return [
-            iu.resize(image, *(ref * k).astype(int)).astype(float) 
+            PatternDetectionTool.__extract_features(
+                iu.resize(img, *(ref * k).astype(int))) 
             for k in np.arange(*scale)
         ]
     # -------------------------------------------------------------------------
@@ -187,11 +213,11 @@ if __name__ == '__main__':
         # find pattern in image
         match = tool.process(image)
         # print
-        cv.imshow('pattern', tool.pattern())
+        #cv.imshow('pattern', tool.pattern())
         cv.imshow('image'  , image  ) 
         cv.imshow('match'  , match  )
         # check
-        #cv.waitKey(0)
+        cv.waitKey(0)
 cv.destroyAllWindows()
 # ################################################################################################
 # ------------------------------------------------------------------------------------------------
