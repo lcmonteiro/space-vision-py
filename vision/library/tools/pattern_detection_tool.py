@@ -66,7 +66,6 @@ class PatternDetectionTool(VisionTool):
         def find_region(data):
             print(data)
             sy, sx, = self.__pattern.shape[0:2]
-            print(sy, sx)
             return [
                 ((rx / fx, ry / fy), ((rx + sx) / fx, (ry + sy) / fy))
                 for _, ry, rx, fy, fx in data
@@ -77,7 +76,7 @@ class PatternDetectionTool(VisionTool):
             for each in data
         ])
         # sort and return
-        return find_region(out[out[:,0].argsort()][-3:])
+        return find_region(out[out[:,0].argsort()][-10:])
     # -------------------------------------------------------------------------
     # steps 3 - search
     # ------------------------------------------------------------------------- 
@@ -88,13 +87,14 @@ class PatternDetectionTool(VisionTool):
     # -------------------------------------------------------------------------
     @staticmethod
     def __extract_features(img):
-        return cv.cvtColor(img, cv.COLOR_BGR2LAB)[:,:, 1:3].astype(np.float64)
+        img = cv.cvtColor(img, cv.COLOR_BGR2LAB)[:,:, 0:3]
+        img.astype(float)
+        return img
 
     # -------------------------------------------------------------------------
     # tool - prepare pattern
     # -------------------------------------------------------------------------
-    @staticmethod
-    def __prepare_pattern(data, area=30000):
+    def __prepare_pattern(self, data, area=30000):
         # current shape
         shape   = np.array(data.shape[:2])
         # updated shape
@@ -102,24 +102,22 @@ class PatternDetectionTool(VisionTool):
         # reshaped pattern
         data    = iu.resize(data, reshape[0], reshape[1])
         # extract features
-        data    = PatternDetectionTool.__extract_features(data)
+        data    = self.__extract_features(data)
         # normalize and return
         return data
 
     # -------------------------------------------------------------------------
     # tool - prepare input
     # -------------------------------------------------------------------------
-    @staticmethod
-    def __prepare_input(img, ref, scale):
+    def __prepare_input(self, img, ref, scale):
         rsz = np.array(ref.shape[:2])
         isz = np.array(img.shape[:2])
         # base shape
         ref = np.flip(isz * np.max(rsz/isz))
         # return a set of reshaped images
         return [
-            PatternDetectionTool.__extract_features(
-                iu.resize(img, *(ref * k).astype(int))) 
-            for k in np.arange(*scale)
+            self.__extract_features(iu.resize(img, *(ref * k).astype(int))) 
+            for k in np.arange(*scale) 
         ]
     # -------------------------------------------------------------------------
     # tool - convolution
@@ -127,7 +125,7 @@ class PatternDetectionTool(VisionTool):
     # [correlation, y, x, d, r1, r2, r3]
     @staticmethod
     @nb.jit(nopython=True, parallel=True)
-    def __convolve_base(img, ref, size):
+    def __convolve_base_(img, ref, size):
         # compute parameters
         rsz = np.array(ref.shape[:2])
         isz = np.array(img.shape[:2])
@@ -144,30 +142,27 @@ class PatternDetectionTool(VisionTool):
                 cnv = roi * ref
                 out[i, j] = np.append(np.array([cnv.sum() / roi.sum(), y, x]), isz)
         return out.reshape((-1, 5))
-        
-    
-
-
-
-
-
-        
 
     @staticmethod
-    @nb.jit(nopython=True, nogil=True, parallel=True)
-    def __convolve(img, ref, step):
+    #@nb.jit(nopython=True, parallel=True)
+    def __convolve_base(img, ref, size):
+        # compute parameters
         rsz = np.array(ref.shape[:2])
         isz = np.array(img.shape[:2])
-        
-        dsz = isz - rsz + 1 
+        dif = (isz - rsz)
+        stp = (dif / size + 1).astype(np.uint32)
+        dsz = (dif / stp  + 1).astype(np.uint32)
+        # output data
+        out = np.empty((dsz[0], dsz[1], 5))
+        for i in range(dsz[0]):
+            y = i * stp[0]
+            for j in range(dsz[1]):
+                x = j * stp[1]
+                roi = img[y : y + rsz[0], x : x + rsz[1]]
+                crr = np.corrcoef(roi.flatten(), ref.flatten())
+                out[i, j] = np.array([crr[0, 1], y, x, isz[0], isz[1]])
+        return out.reshape((-1, 5))
 
-        out = np.empty((dsz[0], dsz[1]))
-        for y in nb.prange(dsz[0]):
-            for x in nb.prange(dsz[1]):
-                roi = img[y:y+rsz[0], x:x+rsz[1]]
-                cnv = roi * ref
-                out[y, x] = cnv.sum() / roi.sum()
-        return out
 
 # ################################################################################################
 # ------------------------------------------------------------------------------------------------
