@@ -11,10 +11,13 @@
 import numba   as nb
 import numpy   as np
 import imutils as iu
+#
+from attrdict import AttrDict as Attributes
 
 # internal
-from vision.library                import VisionTool
+from vision.library  import VisionTool
 
+from pprint import pprint
 # ################################################################################################
 # ------------------------------------------------------------------------------------------------
 # TextDetection 
@@ -28,7 +31,9 @@ class PatternDetectionTool(VisionTool):
         super().__init__()
         # properties
         self.__pattern = self.__prepare_pattern(pattern)
-        self.__scale   = [1.0, 1.3, 0.05]
+        self.__scale   = 1.3
+        self.__angle   = 30
+        self.__steps   = 10
         self.__history = []
     # -------------------------------------------------------------------------
     # property - pattern
@@ -39,7 +44,7 @@ class PatternDetectionTool(VisionTool):
     # -------------------------------------------------------------------------
     # process
     # -------------------------------------------------------------------------
-    def process(self, frame):
+    def process_(self, frame):
         def print_region(frame, region):
             from cv2 import rectangle, putText, FONT_HERSHEY_SIMPLEX
             sy, sx = frame.shape[:2]
@@ -53,6 +58,134 @@ class PatternDetectionTool(VisionTool):
             print(region)
             print_region(frame, region)
         return frame 
+
+    # -------------------------------------------------------------------------
+    # process
+    # -------------------------------------------------------------------------
+    def process(self, frame):
+        # -------------------------------------------------
+        # angles
+        # -------------------------------------------------
+        def init_angles():
+            return next_angles(-self.__angle, self.__angle)
+
+        def next_angles(beg, end):
+            stp = np.linspace(beg, end, self.__steps)
+            stp = np.unique(stp.astype(int), axis=0)
+            return stp
+        
+        # -------------------------------------------------
+        # offset
+        # -------------------------------------------------
+        def init_offset():
+            return np.array([0, 0])
+        
+        # -------------------------------------------------
+        # offset
+        # -------------------------------------------------
+        def init_length(img, ref):
+            rsh = np.array(ref.shape[:2])
+            ish = np.array(img.shape[:2])
+            beg = np.flip(ish * np.max(rsh/ish))
+            return np.multiply(beg, self.__scale)
+
+        # -------------------------------------------------
+        # scales
+        # -------------------------------------------------
+        def init_scales(img, ref):
+            rsh = np.array(ref.shape[:2])
+            ish = np.array(img.shape[:2])
+            beg = np.flip(ish * np.max(rsh/ish))
+            return next_scales(beg, beg * self.__scale)
+
+        def next_scales(beg, end):
+            stp = np.linspace(beg, end, self.__steps)
+            stp = np.unique(stp.astype(int), axis=0)
+            return stp
+        # --------------------------------------------------
+        # process
+        # --------------------------------------------------
+        attr = Attributes(
+            offset=init_offset(),
+            length=init_length(frame, self.__pattern),
+            angles=init_angles(),
+            scales=init_scales(frame, self.__pattern))
+        while True:
+            # run 
+            data = self.__iterate(frame, attr)
+            # iterate
+            pprint(data[0:10])
+            break
+        def print_region(data):
+            sy, sx, = self.__pattern.shape[0:2]
+            return [
+                ((rx / fx, ry / fy), ((rx + sx) / fx, (ry + sy) / fy))
+                for _, ry, rx, fy, fx in data
+            ]
+        return print_region(da)   
+    # -------------------------------------------------------------------------
+    # iterate
+    # -------------------------------------------------------------------------
+    def __iterate(self, data, args):
+        # prepare input
+        data = self.__rotate(data, args)
+        # search pattern
+        data = self.__resize(data, args)
+        # search pattern
+        data = self.__search(data, args)
+        # return
+        return data 
+    
+    # -------------------------------------------------------------------------
+    # rotate
+    # -------------------------------------------------------------------------
+    def __rotate(self, frame, args):
+        frames = []
+        for angle in args.angles:
+            frames.append((angle,
+                iu.rotate(frame, angle=angle)))
+        return frames
+    
+    # -------------------------------------------------------------------------
+    # resize
+    # -------------------------------------------------------------------------
+    def __resize(self, frames, args):
+        data = []
+        for angle, frame in frames:
+            for scale in args.scales:
+                data.append((angle, scale,
+                    self.__features(iu.resize(frame, *scale))))
+        return data
+
+    # -------------------------------------------------------------------------
+    # search
+    # -------------------------------------------------------------------------
+    def __search(self, data, args):
+        def find_region(data):
+            print(data)
+            sy, sx, = self.__pattern.shape[0:2]
+            return [
+                ((rx / fx, ry / fy), ((rx + sx) / fx, (ry + sy) / fy))
+                for _, ry, rx, fy, fx in data
+            ]
+        # process
+        out = []
+        for angle, scale, frame in data:
+            out += [ 
+                (angle, scale, pos, cor)  
+                for cor, pos in self.__convolve(frame)
+            ]
+        # sort and return
+        out.sort(key = lambda x: x[3])
+        return out
+    
+    def __convolve(self, img):
+        return self.__convolve_base(
+            img, 
+            self.__pattern, 
+            np.array([self.__steps, self.__steps]))
+
+
     # -------------------------------------------------------------------------
     # steps 1 - input preparation
     # -------------------------------------------------------------------------        
@@ -62,7 +195,7 @@ class PatternDetectionTool(VisionTool):
     # -------------------------------------------------------------------------
     # steps 2 - search
     # -------------------------------------------------------------------------        
-    def __search(self, data):
+    def __search_(self, data):
         def find_region(data):
             print(data)
             sy, sx, = self.__pattern.shape[0:2]
@@ -78,31 +211,50 @@ class PatternDetectionTool(VisionTool):
         # sort and return
         return find_region(out[out[:,0].argsort()][-10:])
     # -------------------------------------------------------------------------
-    # steps 3 - search
-    # ------------------------------------------------------------------------- 
-    def __select(self, data):
-        pass
-    # -------------------------------------------------------------------------
     # tool - prepare pattern
     # -------------------------------------------------------------------------
     @staticmethod
-    def __extract_features(img):
-        img = cv.cvtColor(img, cv.COLOR_BGR2LAB)[:,:, 0:3]
+    def __features(img):
+        img = cv.cvtColor(img, cv.COLOR_BGR2LAB)
         img.astype(float)
         return img
+    
+    # -------------------------------------------------------------------------
+    # tool - convolution
+    # -------------------------------------------------------------------------    
+    @staticmethod
+    def __convolve_base(img, ref, size):
+        # compute parameters
+        rsz = np.array(ref.shape[:2])
+        isz = np.array(img.shape[:2])
+        dif = (isz - rsz)
+        stp = (dif / size + 1).astype(np.uint32)
+        dsz = (dif / stp  + 1).astype(np.uint32)
+        # output data
+        out = []
+        for i in range(dsz[0]):
+            y = i * stp[0]
+            for j in range(dsz[1]):
+                x = j * stp[1]
+                roi = img[y : y + rsz[0], x : x + rsz[1]]
+                crr = np.corrcoef(roi.flatten(), ref.flatten())
+                out.append((crr[0, 1], (y, x)))
+        return out
+
+
 
     # -------------------------------------------------------------------------
     # tool - prepare pattern
     # -------------------------------------------------------------------------
     def __prepare_pattern(self, data, area=30000):
         # current shape
-        shape   = np.array(data.shape[:2])
+        shape = np.array(data.shape[:2])
         # updated shape
-        reshape = (shape * np.sqrt(area / np.product(shape))).astype(int)
+        shape = (shape * np.sqrt(area / np.product(shape))).astype(int)
         # reshaped pattern
-        data    = iu.resize(data, reshape[0], reshape[1])
+        data  = iu.resize(data, shape[0], shape[1])
         # extract features
-        data    = self.__extract_features(data)
+        data  = self.__features(data)
         # normalize and return
         return data
 
@@ -143,25 +295,6 @@ class PatternDetectionTool(VisionTool):
                 out[i, j] = np.append(np.array([cnv.sum() / roi.sum(), y, x]), isz)
         return out.reshape((-1, 5))
 
-    @staticmethod
-    #@nb.jit(nopython=True, parallel=True)
-    def __convolve_base(img, ref, size):
-        # compute parameters
-        rsz = np.array(ref.shape[:2])
-        isz = np.array(img.shape[:2])
-        dif = (isz - rsz)
-        stp = (dif / size + 1).astype(np.uint32)
-        dsz = (dif / stp  + 1).astype(np.uint32)
-        # output data
-        out = np.empty((dsz[0], dsz[1], 5))
-        for i in range(dsz[0]):
-            y = i * stp[0]
-            for j in range(dsz[1]):
-                x = j * stp[1]
-                roi = img[y : y + rsz[0], x : x + rsz[1]]
-                crr = np.corrcoef(roi.flatten(), ref.flatten())
-                out[i, j] = np.array([crr[0, 1], y, x, isz[0], isz[1]])
-        return out.reshape((-1, 5))
 
 
 # ################################################################################################
