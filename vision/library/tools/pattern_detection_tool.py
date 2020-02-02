@@ -67,8 +67,8 @@ class PatternDetectionTool(VisionTool):
         # angles
         # -------------------------------------------------
         def init_angles():
-            #return next_angles(-self.__angle, self.__angle)
-            return [0]
+            return next_angles(-self.__angle, self.__angle)
+            #return [0]
         def next_angles(beg, end):
             stp = np.linspace(beg, end, self.__steps)
             stp = np.unique(stp.astype(int), axis=0)
@@ -135,7 +135,31 @@ class PatternDetectionTool(VisionTool):
                 p1 = tuple(np.flip(r[0]))
                 p2 = tuple(np.flip(r[1]))
                 rectangle(frame, p1, p2, (255,0, 0), 2)
+        
+        def print_correlation(frame, region):
+            import matplotlib.pyplot as plt
+            ish = region[1]
+            off = region[2]
+            rsh = np.array(self.__pattern.shape[0:2])
+            #
+            f = self.__features(iu.resize(frame, *np.flip(ish))) 
+            #
+            p = np.array([off, (rsh + off)], dtype=int) 
+            print(rsh)
+            print(p)
+            #
+            crop = f[p[0][0]:p[1][0], p[0][1]:p[1][1]]
+            cv.imshow('test'  , crop)
+            crop = np.reshape(crop, (-1, 3)) + 300
+            print(crop.size)
+            print(crop.shape)
+            pattern = np.reshape(self.__pattern, (-1, 3))
+            plt.plot(crop)
+            plt.plot(pattern)
+            plt.show()
 
+        #print_correlation(frame, data[-1])  
+        
         return print_region(frame, find_region(data[-10:]))  
     # -------------------------------------------------------------------------
     # iterate
@@ -201,6 +225,7 @@ class PatternDetectionTool(VisionTool):
     @staticmethod
     def __features(img):
         img = cv.cvtColor(img, cv.COLOR_BGR2LAB)
+        #img = img[:,:, 2:3]
         img.astype(float)
         return img
     
@@ -219,8 +244,17 @@ class PatternDetectionTool(VisionTool):
         for y in range(0, dif[0], stp[0]):
             for x in range(0, dif[1], stp[1]):
                 roi = img[y : y + rsz[0], x : x + rsz[1]]
-                crr = np.corrcoef(roi.flatten(), ref.flatten())
-                out.append((np.abs(crr[0, 1]), np.array([y, x])))
+                #crr = np.corrcoef(roi.flatten(), ref.flatten())[0,1]
+                crr = np.sqrt(np.sum(np.power(
+                    np.array([
+                        np.corrcoef(roi[:,:,0].flatten(), ref[:,:,0].flatten())[0,1],
+                        np.corrcoef(roi[:,:,1].flatten(), ref[:,:,1].flatten())[0,1],
+                        np.corrcoef(roi[:,:,2].flatten(), ref[:,:,2].flatten())[0,1],
+                        ((255 - np.abs(roi[:,:,0].flatten().mean() - ref[:,:,0].flatten().mean())) / 255) 
+                    ]), 2
+                )))
+                # 
+                out.append((crr, np.array([y, x])))
         return out
 
 
