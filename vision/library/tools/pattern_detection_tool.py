@@ -211,7 +211,7 @@ class PatternDetectionTool(VisionTool):
         size = np.array([self.__steps, self.__steps])
         return [ 
             (angle, scale, pos, cor)  
-            for cor, pos in self.__correlation(frame, self.__pattern, size)
+            for cor, pos in self.__correlation_v(frame, self.__pattern, size)
         ]
     # -------------------------------------------------------------------------
     # steps 1 - input preparation
@@ -257,6 +257,48 @@ class PatternDetectionTool(VisionTool):
                 out.append((crr, np.array([y, x])))
         return out
 
+    # -------------------------------------------------------------------------
+    # tool - correlation - vectorized 
+    # img shape = (H, W, C)
+    # ------------------------------------------------------------------------- 
+    @staticmethod
+    def __correlation_v(img, ref, step):
+        from vision.library.helpers.vectorize  import sliding_window
+        # sliding window
+        img = sliding_window(img, step, ref.shape)
+        print(img.shape)
+        # correlation
+        ref = ref - np.mean(ref)
+        print(ref.shape)
+        
+        mean = np.mean(img, axis=(3, 4), keepdims=True)
+        print(mean.shape)
+        print(mean)
+
+        img = img - np.mean(img, axis=(3, 4), keepdims=True)
+        print(img.shape)
+        print(img)
+
+        acc = np.sum(img**2, axis=(3,4))
+        print(acc.shape)
+        print(acc)
+        print(np.sqrt(acc[0,:,:,0]))
+
+        
+        img = img[0,0,0,:,:, 0]
+        img = img - np.mean(img)
+        img = np.sum(img**2)
+        print(np.sqrt(img))
+
+
+
+
+        
+
+        
+        
+        return img
+
 
 
     # -------------------------------------------------------------------------
@@ -299,9 +341,9 @@ if __name__ == '__main__':
     # -----------------------------------------------------------------------------------
     # windows
     cv.namedWindow('image'  , cv.WINDOW_NORMAL)
-    #cv.namedWindow('pattern', cv.WINDOW_NORMAL)
+    cv.namedWindow('pattern', cv.WINDOW_NORMAL)
     #cv.namedWindow('match'  , cv.WINDOW_NORMAL)
-    cv.namedWindow('test'  , cv.WINDOW_NORMAL)
+    #cv.namedWindow('test'  , cv.WINDOW_NORMAL)
     #cv.namedWindow('test1'  , cv.WINDOW_NORMAL)
     # pattern
     pattern = cv.imread(args.template)
@@ -318,7 +360,7 @@ if __name__ == '__main__':
         # find pattern in image
         match = tool.process(image)
         # print
-        #cv.imshow('pattern', tool.pattern())
+        cv.imshow('pattern', pattern)
         cv.imshow('image'  , image) 
         #cv.imshow('match'  , match  )
         # check
