@@ -112,12 +112,17 @@ class PatternDetectionTool(VisionTool):
             angles=init_angles(),
             scales=init_scales(frame, self.__pattern))
         print(attr)
+        from time import time
+        
         while True:
+            ref = time()
+            
             # run 
             data = self.__iterate(frame, attr)
             # iterate
             pprint(data[-10:])
-            break
+            print("----------------------", time()-ref)
+            #break
 
         def find_region(data):
             rsh = np.array(self.__pattern.shape[0:2])
@@ -211,7 +216,7 @@ class PatternDetectionTool(VisionTool):
         size = np.array([self.__steps, self.__steps])
         return [ 
             (angle, scale, pos, cor)  
-            for cor, pos in self.__correlation_v(frame, self.__pattern, size)
+            for cor, pos in self.__correlation(frame, self.__pattern, size)
         ]
     # -------------------------------------------------------------------------
     # steps 1 - input preparation
@@ -371,3 +376,4 @@ cv.destroyAllWindows()
 # End
 # ------------------------------------------------------------------------------------------------
 # ################################################################################################
+# python -m vision.library.tools.pattern_detection_tool_2 -t /c/Workspace/gen5/template.jpg -i "c:\Workspace\gen5\learn\*"
