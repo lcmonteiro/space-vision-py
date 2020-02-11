@@ -371,3 +371,4 @@ cv.destroyAllWindows()
 # End
 # ------------------------------------------------------------------------------------------------
 # ################################################################################################
+# python -m vision.library.tools.pattern_detection_tool_2 -t /c/Workspace/gen5/template.jpg -i "c:\Workspace\gen5\learn\*"

@@ -29,12 +29,13 @@ class PatternDetectionTool(VisionTool):
     # -------------------------------------------------------------------------
     def __init__(self, pattern):
         super().__init__()
+        # settings
+        self.__scale = 1.3
+        self.__angle = 30
+        self.__steps = 10
+        self.__area  = 30000
         # properties
         self.__pattern = self.__prepare_pattern(pattern)
-        self.__scale   = 1.3
-        self.__angle   = 30
-        self.__steps   = 10
-        self.__history = []
 
     # -------------------------------------------------------------------------
     # property - pattern
@@ -45,21 +46,23 @@ class PatternDetectionTool(VisionTool):
     # -------------------------------------------------------------------------
     # process
     # -------------------------------------------------------------------------
-    def process(self, img):
-        # resize & feature extration
-        data = self.__prepare_image(img)
+    def process(self, data):
         # context initialization 
         ctxt = self.__init_context(data)
         # run process layers
         while self.__check_context(ctxt):
             # rotate img
             data = self.__rotate(data, ctxt)
+            print("rotate", data.shape)
             # resize img
             data = self.__resize(data, ctxt)
+            print("resize", data.shape)
             # select region 
             data = self.__select(data, ctxt)
+            print("select", data.shape)
             # search pattern
             data = self.__search(data, ctxt)
+            print("search", data.shape)
             # update context
             ctxt = self.__update_context(ctxt)
             break
@@ -93,11 +96,11 @@ class PatternDetectionTool(VisionTool):
         angles = np.linspace(-self.__angle, self.__angle, self.__steps)
         angles = np.unique(angles.astype(int), axis=0)
         # init scales
-        rsh = np.array(ref.shape[:2])
+        rsh = np.array(self.__pattern.shape[:2])
         ish = np.array(img.shape[:2])
-        beg = ish * np.max(rsh / ish)
-        scales = np.linspace(beg, beg * self.__scale, self.__steps)
-        scales = np.unique(stp.astype(int), axis=0)
+        begin  = ish * np.max(rsh / ish)
+        scales = np.linspace(begin, begin * self.__scale, self.__steps)
+        scales = np.unique(scales.astype(int), axis=0)
         # init offset 
         offset = np.array([1.0, 1.0])
         # init shape
@@ -121,54 +124,42 @@ class PatternDetectionTool(VisionTool):
     # -------------------------------------------------------------------------
     # rotate
     # -------------------------------------------------------------------------
-    def __rotate(self, frame, args):
-        frames = []
-        for angle in args.angles:
-            frames.append((angle,
-                iu.rotate(frame, angle=angle)))
-        return frames
+    def __rotate(self, frame, ctxt):           
+        return np.array([
+            iu.rotate(frame, angle=angle)
+            for angle in ctxt.angles
+        ])
     
     # -------------------------------------------------------------------------
     # resize
     # -------------------------------------------------------------------------
-    def __resize(self, frames, args):
-        data = []
-        for angle, frame in frames:
-            for scale in args.scales:
-                data.append((angle, scale,
-                    self.__features(iu.resize(frame, *np.flip(scale)))))
+    def __resize(self, data, ctxt):
+        return np.array([
+            self.__features(iu.resize(frame, *np.flip(scale))) 
+            for scale in ctxt.scales 
+            for frame in data
+        ])
+
+    # -------------------------------------------------------------------------
+    # select
+    # -------------------------------------------------------------------------
+    def __select(self, data, ctxt):
         return data
 
     # -------------------------------------------------------------------------
     # search
     # -------------------------------------------------------------------------
-    def __search(self, data, args):
-        from vision.library.helpers.vectorize  import sliding_window
+    def __search(self, data, ctxt):
+        from vision.library.helpers.vectorize  import sliding
+        # using parameters
+        ref = self.__pattern
+        axs = (-3, -2)
+        stp = (self.__steps, self.__steps)
         # sliding window
-        img = sliding_window(img, step, ref.shape)
-        print(img.shape)
-        # correlation
-        ref = ref - np.mean(ref)
-        print(ref.shape)
-        
-        mean = np.mean(img, axis=(3, 4), keepdims=True)
-        print(mean.shape)
-        print(mean)
-
-        img = img - np.mean(img, axis=(3, 4), keepdims=True)
-        print(img.shape)
-        print(img)
-
-        acc = np.sum(img**2, axis=(3,4))
-        print(acc.shape)
-        print(acc)
-        print(np.sqrt(acc[0,:,:,0]))
-
-        
-        img = img[0,0,0,:,:, 0]
-        img = img - np.mean(img)
-        img = np.sum(img**2)
-        print(np.sqrt(img))
+        #print(data)
+        print(data.shape)
+        data = sliding(data, axis=axs, step=stp, shape=ref.shape)
+        print(data.shape)
 
         # process
         out = []
@@ -176,21 +167,24 @@ class PatternDetectionTool(VisionTool):
     
 
     # -------------------------------------------------------------------------
-    # steps 1 - input preparation
-    # -------------------------------------------------------------------------        
-    def __prepare(self, data):
-        return self.__prepare_input(data, self.__pattern, self.__scale)
-
-
+    # helper - prepare image
+    # -------------------------------------------------------------------------
+    def __prepare_image(self, data):
+        # rsh   = np.array(self.__pattern.shape[:2])
+        # ish   = np.array(data.shape[:2])
+        # shape = self.__scale * ish * np.max(rsh / ish) 
+        # # reshaped pattern
+        # data  = iu.resize(data, *np.flip(shape.astype(int)))
+        return data
     
     # -------------------------------------------------------------------------
     # helper - prepare pattern
     # -------------------------------------------------------------------------
-    def __prepare_pattern(self, data, area=30000):
+    def __prepare_pattern(self, data):
         # current shape
         shape = np.array(data.shape[:2])
         # updated shape
-        shape = (shape * np.sqrt(area / np.product(shape)))
+        shape = (shape * np.sqrt(self.__area / np.product(shape)))
         # reshaped pattern
         data  = iu.resize(data, *np.flip(shape.astype(int)))
         # extract features
