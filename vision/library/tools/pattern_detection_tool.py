@@ -112,11 +112,16 @@ class PatternDetectionTool(VisionTool):
             angles=init_angles(),
             scales=init_scales(frame, self.__pattern))
         print(attr)
+        from time import time
+        data = self.__features(frame)
         while True:
+            ref = time()
+            
             # run 
-            data = self.__iterate(frame, attr)
+            data = self.__iterate(data, attr)
             # iterate
             pprint(data[-10:])
+            print("----------------------", time()-ref)
             break
 
         def find_region(data):
@@ -192,7 +197,7 @@ class PatternDetectionTool(VisionTool):
         for angle, frame in frames:
             for scale in args.scales:
                 data.append((angle, scale,
-                    self.__features(iu.resize(frame, *np.flip(scale)))))
+                    iu.resize(frame, *np.flip(scale))))
         return data
 
     # -------------------------------------------------------------------------
@@ -211,7 +216,7 @@ class PatternDetectionTool(VisionTool):
         size = np.array([self.__steps, self.__steps])
         return [ 
             (angle, scale, pos, cor)  
-            for cor, pos in self.__correlation_v(frame, self.__pattern, size)
+            for cor, pos in self.__correlation(frame, self.__pattern, size)
         ]
     # -------------------------------------------------------------------------
     # steps 1 - input preparation
@@ -250,7 +255,9 @@ class PatternDetectionTool(VisionTool):
                         np.corrcoef(roi[:,:,0].flatten(), ref[:,:,0].flatten())[0,1],
                         np.corrcoef(roi[:,:,1].flatten(), ref[:,:,1].flatten())[0,1],
                         np.corrcoef(roi[:,:,2].flatten(), ref[:,:,2].flatten())[0,1],
-                        ((255 - np.abs(roi[:,:,0].flatten().mean() - ref[:,:,0].flatten().mean())) / 255) 
+                        ((255 - np.abs(roi[:,:,0].flatten().mean() - ref[:,:,0].flatten().mean())) / 255), 
+                        ((255 - np.abs(roi[:,:,1].flatten().mean() - ref[:,:,1].flatten().mean())) / 255),
+                        ((255 - np.abs(roi[:,:,2].flatten().mean() - ref[:,:,2].flatten().mean())) / 255) 
                     ]), 2
                 )))
                 # 
@@ -304,7 +311,7 @@ class PatternDetectionTool(VisionTool):
     # -------------------------------------------------------------------------
     # tool - prepare pattern
     # -------------------------------------------------------------------------
-    def __prepare_pattern(self, data, area=30000):
+    def __prepare_pattern(self, data, area=1000):
         # current shape
         shape = np.array(data.shape[:2])
         # updated shape
